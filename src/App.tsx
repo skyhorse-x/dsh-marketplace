@@ -1,4 +1,11 @@
 import React, { useState, useEffect } from 'react'
+import {
+  Home, MessageCircle, Puzzle, FolderOpen, Settings, Search, Star, Download,
+  Calendar, Tag, Check, RefreshCw, Eye, Brain, PenTool, Store, Bot, Palette,
+  Smartphone, Wrench, Globe, Lock, Image, Shield, Radio, Glasses,
+  ChevronRight, ChevronLeft, Loader2, Folder, Flag, Sparkles, Zap, Code,
+  Package, TrendingUp, Clock, User, Hash, ExternalLink, AlertTriangle
+} from 'lucide-react'
 
 interface Plugin {
   id: string
@@ -13,36 +20,44 @@ interface Plugin {
   rating: number
   category: string
   tags: string[]
-  icon: string
+  icon: React.ReactNode
 }
 
 const plugins: Plugin[] = [
-  { id: '1', name: 'dsh-vision-router', description: 'Eyes for text-only DeepSeek Harness agents: built-in free vision chain (no key) + pixel-level vision tools (Q&A, grounding, crop, pixel diff, colors, OCR, SVG trace, cutout, screenshots).', author: 'Community', version: '1.7.3', downloads: '26.4k', monthlyDownloads: '914', stars: '26.4k', installed: false, rating: 4.9, category: 'ai', tags: ['vision', 'ocr', 'image'], icon: '???' },
-  { id: '2', name: 'dsh-context', description: 'A DeepSeek Harness plugin for context insight and management, with context dashboard and context command, for understanding how the context is made of, and how it evolves.', author: 'Community', version: '0.19.2', downloads: '9.9k', monthlyDownloads: '626', stars: '9.9k', installed: false, rating: 4.7, category: 'productivity', tags: ['context', 'dashboard'], icon: '??' },
-  { id: '3', name: '@zseven-w/dsh-openpencil', description: 'OpenPencil plugin for DSH with exact multi-frame previews, an interactive canvas, and managed editor workbenches.', author: 'zseven-w', version: '0.1.0-rc.1', downloads: '132', monthlyDownloads: '132', stars: '132', installed: false, rating: 4.5, category: 'creative', tags: ['canvas', 'editor'], icon: '??' },
-  { id: '4', name: '@sanqi-normal/dsh-webui-market-plugin', description: 'In-harness community plugin market for the dsh web GUI: browse awesome-dsh-plugin.com, install and uninstall plugins into a profile.', author: 'sanqi-normal', version: '0.5.5', downloads: '96', monthlyDownloads: '96', stars: '96', installed: false, rating: 4.3, category: 'utility', tags: ['market', 'browser'], icon: '??' },
-  { id: '5', name: '@mars-sea/dsh-commandcode-provider', description: "Unofficial DeepSeek Harness LLM provider plugin for Command Code, ported from pi-commandcode-provider (MIT). Registers the 'commandcode' provider route.", author: 'mars-sea', version: '0.6.0', downloads: '77', monthlyDownloads: '77', stars: '77', installed: false, rating: 4.4, category: 'ai', tags: ['llm', 'provider'], icon: '??' },
-  { id: '6', name: 'dsh-dream-skin', description: 'DeepSeek Harness 换肤插件 (Dream Skin for DSH): 8 套 iOS / Linear 式清冷色调的高质感主题 + 流光光效带 + 每皮智能背景 + 强调色 + 主题包分享', author: 'Community', version: '0.4.1', downloads: '5.5k', monthlyDownloads: '70', stars: '5.5k', installed: false, rating: 4.8, category: 'theme', tags: ['skin', 'theme', 'ui'], icon: '??' },
-  { id: '7', name: 'dsh-mobile', description: 'DeepSeek Harness 移动端适配与安全域网访问插件，支持 Android App 和手机浏览器。', author: 'Community', version: '0.1.0-alpha.24', downloads: '5.7k', monthlyDownloads: '67', stars: '5.7k', installed: false, rating: 4.6, category: 'utility', tags: ['mobile', 'android'], icon: '??' },
-  { id: '8', name: 'dsh-web-plugin-manager', description: 'Manage DeepSeek Harness (DSH) plugins from the Web UI: list, enable/disable, install/remove, environments, and a GitHub-awesome-driven marketplace.', author: 'Community', version: '0.4.6', downloads: '62', monthlyDownloads: '62', stars: '62', installed: false, rating: 4.2, category: 'utility', tags: ['manager', 'plugins'], icon: '??' },
-  { id: '9', name: 'dsh-client-auto-continue', description: 'DSH Web UI plugin: automatically sends "继续" (continue) when a request is interrupted by network errors or other non-human causes.', author: 'Community', version: '0.7.5', downloads: '4.7k', monthlyDownloads: '34', stars: '4.7k', installed: true, rating: 4.5, category: 'productivity', tags: ['auto', 'continue'], icon: '??' },
-  { id: '10', name: 'dsh-remote', description: 'Remote-work assistant for DeepSeek Harness: connect SSH (password/key/agent/keyboard-interactive/proxy jump), pick a remote workspace, operate on it with 21 rw_* tools.', author: 'Community', version: '0.8.6', downloads: '30', monthlyDownloads: '30', stars: '30', installed: false, rating: 4.7, category: 'development', tags: ['ssh', 'remote'], icon: '??' },
-  { id: '11', name: 'dsh-passwords', description: 'dsh-passwords: a server-grade gateway that turns DeepSeek Harness into a multi-tenant platform — remote access + automatic HTTPS, per-subuser permissions & quotas.', author: 'Community', version: '2.5.4', downloads: '15', monthlyDownloads: '15', stars: '15', installed: false, rating: 4.4, category: 'security', tags: ['auth', 'multi-tenant'], icon: '??' },
-  { id: '12', name: 'dsh-any-background', description: 'Appearance plugin for DeepSeek Harness: custom theme color (PS-style color wheel), background wallpaper with opacity/blur controls.', author: 'Community', version: '0.1.9', downloads: '15', monthlyDownloads: '15', stars: '15', installed: false, rating: 4.3, category: 'theme', tags: ['background', 'wallpaper'], icon: '???' },
-  { id: '13', name: 'dsh-config-manager', description: 'DSH Config Manager — backup / export / import / migrate DSH configuration (dual-face Cordis plugin: host engine + web UI).', author: 'Community', version: '0.1.40', downloads: '5.2k', monthlyDownloads: '7', stars: '5.2k', installed: false, rating: 4.6, category: 'utility', tags: ['config', 'backup'], icon: '??' },
-  { id: '14', name: 'upstream-radar', description: 'Always-on dependency security monitoring for DeepSeek Harness (DSH) plugins: find exact installed or candidate transitive vulnerable paths.', author: 'Community', version: '0.38.0', downloads: '10.3k', monthlyDownloads: '6', stars: '10.3k', installed: false, rating: 4.8, category: 'security', tags: ['security', 'monitor'], icon: '??' },
-  { id: '15', name: 'dsh-free-vision', description: 'Free vision plugin for DeepSeek Harness (dsh): image understanding for text-only models with free-tier providers (Qwen3-VL-Flash / DeepSeek-OCR / Doubao).', author: 'Community', version: '1.0.8', downloads: '5.3k', monthlyDownloads: '6', stars: '5.3k', installed: false, rating: 4.7, category: 'ai', tags: ['vision', 'free'], icon: '??' },
+  { id: '1', name: 'dsh-vision-router', description: 'Eyes for text-only DeepSeek Harness agents: built-in free vision chain (no key) + pixel-level vision tools (Q&A, grounding, crop, pixel diff, colors, OCR, SVG trace, cutout, screenshots).', author: 'Community', version: '1.7.3', downloads: '26.4k', monthlyDownloads: '914', stars: '26.4k', installed: false, rating: 4.9, category: 'ai', tags: ['vision', 'ocr', 'image'], icon: <Eye size={24} /> },
+  { id: '2', name: 'dsh-context', description: 'A DeepSeek Harness plugin for context insight and management, with context dashboard and context command, for understanding how the context is made of, and how it evolves.', author: 'Community', version: '0.19.2', downloads: '9.9k', monthlyDownloads: '626', stars: '9.9k', installed: false, rating: 4.7, category: 'productivity', tags: ['context', 'dashboard'], icon: <Brain size={24} /> },
+  { id: '3', name: '@zseven-w/dsh-openpencil', description: 'OpenPencil plugin for DSH with exact multi-frame previews, an interactive canvas, and managed editor workbenches.', author: 'zseven-w', version: '0.1.0-rc.1', downloads: '132', monthlyDownloads: '132', stars: '132', installed: false, rating: 4.5, category: 'creative', tags: ['canvas', 'editor'], icon: <PenTool size={24} /> },
+  { id: '4', name: '@sanqi-normal/dsh-webui-market-plugin', description: 'In-harness community plugin market for the dsh web GUI: browse awesome-dsh-plugin.com, install and uninstall plugins into a profile.', author: 'sanqi-normal', version: '0.5.5', downloads: '96', monthlyDownloads: '96', stars: '96', installed: false, rating: 4.3, category: 'utility', tags: ['market', 'browser'], icon: <Store size={24} /> },
+  { id: '5', name: '@mars-sea/dsh-commandcode-provider', description: "Unofficial DeepSeek Harness LLM provider plugin for Command Code, ported from pi-commandcode-provider (MIT). Registers the 'commandcode' provider route.", author: 'mars-sea', version: '0.6.0', downloads: '77', monthlyDownloads: '77', stars: '77', installed: false, rating: 4.4, category: 'ai', tags: ['llm', 'provider'], icon: <Bot size={24} /> },
+  { id: '6', name: 'dsh-dream-skin', description: 'DeepSeek Harness 换肤插件 (Dream Skin for DSH): 8 套 iOS / Linear 式清冷色调的高质感主题 + 流光光效带 + 每皮智能背景 + 强调色 + 主题包分享', author: 'Community', version: '0.4.1', downloads: '5.5k', monthlyDownloads: '70', stars: '5.5k', installed: false, rating: 4.8, category: 'theme', tags: ['skin', 'theme', 'ui'], icon: <Palette size={24} /> },
+  { id: '7', name: 'dsh-mobile', description: 'DeepSeek Harness 移动端适配与安全域网访问插件，支持 Android App 和手机浏览器。', author: 'Community', version: '0.1.0-alpha.24', downloads: '5.7k', monthlyDownloads: '67', stars: '5.7k', installed: false, rating: 4.6, category: 'utility', tags: ['mobile', 'android'], icon: <Smartphone size={24} /> },
+  { id: '8', name: 'dsh-web-plugin-manager', description: 'Manage DeepSeek Harness (DSH) plugins from the Web UI: list, enable/disable, install/remove, environments, and a GitHub-awesome-driven marketplace.', author: 'Community', version: '0.4.6', downloads: '62', monthlyDownloads: '62', stars: '62', installed: false, rating: 4.2, category: 'utility', tags: ['manager', 'plugins'], icon: <Wrench size={24} /> },
+  { id: '9', name: 'dsh-client-auto-continue', description: 'DSH Web UI plugin: automatically sends "继续" (continue) when a request is interrupted by network errors or other non-human causes.', author: 'Community', version: '0.7.5', downloads: '4.7k', monthlyDownloads: '34', stars: '4.7k', installed: true, rating: 4.5, category: 'productivity', tags: ['auto', 'continue'], icon: <RefreshCw size={24} /> },
+  { id: '10', name: 'dsh-remote', description: 'Remote-work assistant for DeepSeek Harness: connect SSH (password/key/agent/keyboard-interactive/proxy jump), pick a remote workspace, operate on it with 21 rw_* tools.', author: 'Community', version: '0.8.6', downloads: '30', monthlyDownloads: '30', stars: '30', installed: false, rating: 4.7, category: 'development', tags: ['ssh', 'remote'], icon: <Globe size={24} /> },
+  { id: '11', name: 'dsh-passwords', description: 'dsh-passwords: a server-grade gateway that turns DeepSeek Harness into a multi-tenant platform — remote access + automatic HTTPS, per-subuser permissions & quotas.', author: 'Community', version: '2.5.4', downloads: '15', monthlyDownloads: '15', stars: '15', installed: false, rating: 4.4, category: 'security', tags: ['auth', 'multi-tenant'], icon: <Lock size={24} /> },
+  { id: '12', name: 'dsh-any-background', description: 'Appearance plugin for DeepSeek Harness: custom theme color (PS-style color wheel), background wallpaper with opacity/blur controls.', author: 'Community', version: '0.1.9', downloads: '15', monthlyDownloads: '15', stars: '15', installed: false, rating: 4.3, category: 'theme', tags: ['background', 'wallpaper'], icon: <Image size={24} /> },
+  { id: '13', name: 'dsh-config-manager', description: 'DSH Config Manager — backup / export / import / migrate DSH configuration (dual-face Cordis plugin: host engine + web UI).', author: 'Community', version: '0.1.40', downloads: '5.2k', monthlyDownloads: '7', stars: '5.2k', installed: false, rating: 4.6, category: 'utility', tags: ['config', 'backup'], icon: <Settings size={24} /> },
+  { id: '14', name: 'upstream-radar', description: 'Always-on dependency security monitoring for DeepSeek Harness (DSH) plugins: find exact installed or candidate transitive vulnerable paths.', author: 'Community', version: '0.38.0', downloads: '10.3k', monthlyDownloads: '6', stars: '10.3k', installed: false, rating: 4.8, category: 'security', tags: ['security', 'monitor'], icon: <Radio size={24} /> },
+  { id: '15', name: 'dsh-free-vision', description: 'Free vision plugin for DeepSeek Harness (dsh): image understanding for text-only models with free-tier providers (Qwen3-VL-Flash / DeepSeek-OCR / Doubao).', author: 'Community', version: '1.0.8', downloads: '5.3k', monthlyDownloads: '6', stars: '5.3k', installed: false, rating: 4.7, category: 'ai', tags: ['vision', 'free'], icon: <Glasses size={24} /> },
 ]
 
 const categories = [
-  { id: 'all', label: 'All', icon: '??' },
-  { id: 'ai', label: 'AI & Vision', icon: '??' },
-  { id: 'development', label: 'Development', icon: '??' },
-  { id: 'productivity', label: 'Productivity', icon: '?' },
-  { id: 'theme', label: 'Themes', icon: '??' },
-  { id: 'security', label: 'Security', icon: '??' },
-  { id: 'utility', label: 'Utility', icon: '??' },
-  { id: 'creative', label: 'Creative', icon: '?' },
+  { id: 'all', label: 'All', icon: <Sparkles size={14} /> },
+  { id: 'ai', label: 'AI & Vision', icon: <Bot size={14} /> },
+  { id: 'development', label: 'Development', icon: <Code size={14} /> },
+  { id: 'productivity', label: 'Productivity', icon: <Zap size={14} /> },
+  { id: 'theme', label: 'Themes', icon: <Palette size={14} /> },
+  { id: 'security', label: 'Security', icon: <Shield size={14} /> },
+  { id: 'utility', label: 'Utility', icon: <Wrench size={14} /> },
+  { id: 'creative', label: 'Creative', icon: <PenTool size={14} /> },
+]
+
+const navItems = [
+  { id: 'home', label: 'Home', icon: <Home size={18} /> },
+  { id: 'chat', label: 'Chat', icon: <MessageCircle size={18} /> },
+  { id: 'plugins', label: 'Marketplace', icon: <Puzzle size={18} /> },
+  { id: 'workspace', label: 'Workspace', icon: <FolderOpen size={18} /> },
+  { id: 'settings', label: 'Settings', icon: <Settings size={18} /> },
 ]
 
 const App: React.FC = () => {
@@ -100,9 +115,9 @@ const App: React.FC = () => {
           from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.7; }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
         .nav-item:hover { background: rgba(102, 126, 234, 0.12) !important; }
         .nav-item.active { background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.15)) !important; }
@@ -116,6 +131,7 @@ const App: React.FC = () => {
         .scroll-area::-webkit-scrollbar-track { background: transparent; }
         .scroll-area::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 3px; }
         .scroll-area::-webkit-scrollbar-thumb:hover { background: #3a3a5a; }
+        .spin-anim { animation: spin 1s linear infinite; }
       `}</style>
 
       {/* Sidebar */}
@@ -129,20 +145,15 @@ const App: React.FC = () => {
             width: 36, height: 36, borderRadius: 10,
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, fontWeight: 800, color: '#fff', flexShrink: 0,
-            boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
-          }}>D</div>
+            flexShrink: 0, boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+          }}>
+            <Package size={18} color="#fff" strokeWidth={2.5} />
+          </div>
           {!sidebarCollapsed && <span style={{ fontSize: 17, fontWeight: 700, color: '#fff', letterSpacing: '-0.3px' }}>DSH Market</span>}
         </div>
 
         <div style={{ flex: 1, padding: '12px 10px' }}>
-          {[
-            { id: 'home', label: 'Home', icon: '??' },
-            { id: 'chat', label: 'Chat', icon: '??' },
-            { id: 'plugins', label: 'Marketplace', icon: '??' },
-            { id: 'workspace', label: 'Workspace', icon: '??' },
-            { id: 'settings', label: 'Settings', icon: '??' },
-          ].map(item => (
+          {navItems.map(item => (
             <button key={item.id} className={`nav-item ${activeNav === item.id ? 'active' : ''}`}
               onClick={() => setActiveNav(item.id)}
               style={{
@@ -151,7 +162,7 @@ const App: React.FC = () => {
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, fontWeight: 500,
                 justifyContent: sidebarCollapsed ? 'center' : 'flex-start', transition: 'all 0.15s', marginBottom: 3
               }}>
-              <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>
+              {item.icon}
               {!sidebarCollapsed && <span>{item.label}</span>}
             </button>
           ))}
@@ -165,7 +176,7 @@ const App: React.FC = () => {
               display: 'flex', alignItems: 'center', gap: 12, fontSize: 13,
               justifyContent: sidebarCollapsed ? 'center' : 'flex-start', transition: 'all 0.15s'
             }}>
-            <span style={{ fontSize: 16 }}>{sidebarCollapsed ? '?' : '?'}</span>
+            {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             {!sidebarCollapsed && <span>Collapse</span>}
           </button>
         </div>
@@ -193,24 +204,25 @@ const App: React.FC = () => {
                 onFocus={e => e.target.style.borderColor = '#667eea'}
                 onBlur={e => e.target.style.borderColor = '#2a2a45'}
               />
-              <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 16, opacity: 0.5 }}>??</span>
+              <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.5, color: '#7878a0' }} />
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: 6, padding: '12px 20px', borderBottom: '1px solid #1e1e35' }}>
             {[
-              { id: 'featured', label: '? Featured' },
-              { id: 'installed', label: '? Installed' },
-              { id: 'updates', label: '↑ Updates' }
+              { id: 'featured', label: 'Featured', icon: <Star size={13} /> },
+              { id: 'installed', label: 'Installed', icon: <Check size={13} /> },
+              { id: 'updates', label: 'Updates', icon: <TrendingUp size={13} /> }
             ].map(tab => (
               <button key={tab.id} className="tab-btn"
                 onClick={() => setActiveTab(tab.id)}
                 style={{
-                  padding: '7px 16px', borderRadius: 8, border: 'none',
+                  padding: '7px 16px', borderRadius: 8, border: 'none', display: 'flex', alignItems: 'center', gap: 6,
                   background: activeTab === tab.id ? 'linear-gradient(135deg, #667eea, #764ba2)' : 'transparent',
                   color: activeTab === tab.id ? '#fff' : '#7878a0', cursor: 'pointer',
                   fontSize: 13, fontWeight: 600, transition: 'all 0.2s'
                 }}>
+                {tab.icon}
                 {tab.label}
               </button>
             ))}
@@ -221,12 +233,13 @@ const App: React.FC = () => {
               <button key={cat.id} className="cat-btn"
                 onClick={() => setActiveCategory(cat.id)}
                 style={{
-                  padding: '5px 12px', borderRadius: 20, border: 'none',
+                  padding: '5px 12px', borderRadius: 20, border: 'none', display: 'flex', alignItems: 'center', gap: 5,
                   background: activeCategory === cat.id ? 'rgba(102, 126, 234, 0.2)' : '#1a1a2e',
                   color: activeCategory === cat.id ? '#a5b4fc' : '#7878a0',
                   cursor: 'pointer', fontSize: 12, fontWeight: 500, transition: 'all 0.15s'
                 }}>
-                {cat.icon} {cat.label}
+                {cat.icon}
+                {cat.label}
               </button>
             ))}
           </div>
@@ -234,7 +247,7 @@ const App: React.FC = () => {
           <div className="scroll-area" style={{ flex: 1, overflow: 'auto', padding: '14px 16px' }}>
             {filteredPlugins.length === 0 ? (
               <div style={{ textAlign: 'center', color: '#555570', padding: 60 }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>??</div>
+                <Search size={32} style={{ marginBottom: 12, opacity: 0.5 }} />
                 <div style={{ fontSize: 15 }}>No plugins found</div>
               </div>
             ) : (
@@ -264,7 +277,7 @@ const App: React.FC = () => {
             />
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#555570', flexDirection: 'column', gap: 12 }}>
-              <div style={{ fontSize: 56 }}>??</div>
+              <Puzzle size={48} style={{ opacity: 0.5 }} />
               <div style={{ fontSize: 16 }}>Select a plugin to view details</div>
             </div>
           )}
@@ -276,172 +289,197 @@ const App: React.FC = () => {
 
 const PluginCard: React.FC<{ plugin: Plugin; selected: boolean; installing: boolean; progress: number; isInstalled: boolean; onClick: () => void; onInstall: () => void; index: number }> = ({
   plugin, selected, installing, progress, isInstalled, onClick, onInstall, index
-}) => (
-  <div className={`plugin-card ${selected ? 'selected' : ''}`}
-    onClick={onClick}
-    style={{
-      padding: 16, borderRadius: 14, background: selected ? '#16162d' : '#111122',
-      border: selected ? '1px solid #667eea' : '1px solid #1e1e35',
-      marginBottom: 10, cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-      animation: `fadeIn 0.3s ease ${index * 0.03}s both`
-    }}>
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-      <div style={{
-        width: 48, height: 48, borderRadius: 12,
-        background: `linear-gradient(135deg, ${['#667eea', '#f093fb', '#4facfa', '#43e97b', '#fa709a'][index % 5]}22, ${['#667eea', '#f093fb', '#4facfa', '#43e97b', '#fa709a'][index % 5]}11)`,
-        border: `1px solid ${['#667eea', '#f093fb', '#4facfa', '#43e97b', '#fa709a'][index % 5]}33`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0
-      }}>{plugin.icon}</div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: '#fff', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{plugin.name}</span>
-          {isInstalled && <span style={{ fontSize: 10, color: '#43e97b', background: 'rgba(67, 233, 123, 0.12)', padding: '2px 8px', borderRadius: 10, flexShrink: 0, fontWeight: 600 }}>? Installed</span>}
-        </div>
-        <div style={{ fontSize: 12, color: '#7878a0', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', marginBottom: 8 }}>
-          {plugin.description}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11, color: '#555570' }}>
-          <span>? {plugin.stars}</span>
-          <span>?? {plugin.downloads}</span>
-          <span style={{ marginLeft: 'auto', color: '#667eea' }}>v{plugin.version}</span>
-        </div>
-      </div>
-    </div>
+}) => {
+  const iconColors = ['#667eea', '#f093fb', '#4facfa', '#43e97b', '#fa709a', '#ffa726', '#26c6da', '#ab47bc']
+  const color = iconColors[index % iconColors.length]
 
-    {installing && (
-      <div style={{ marginTop: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 11, color: '#a5b4fc' }}>
-          <span>Installing...</span>
-          <span>{progress}%</span>
-        </div>
-        <div style={{ height: 4, background: '#1e1e35', borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{
-            height: '100%', width: `${progress}%`,
-            background: 'linear-gradient(90deg, #667eea, #764ba2)',
-            borderRadius: 2, transition: 'width 0.2s ease',
-            boxShadow: '0 0 8px rgba(102, 126, 234, 0.5)'
-          }} />
+  return (
+    <div className={`plugin-card ${selected ? 'selected' : ''}`}
+      onClick={onClick}
+      style={{
+        padding: 16, borderRadius: 14, background: selected ? '#16162d' : '#111122',
+        border: selected ? '1px solid #667eea' : '1px solid #1e1e35',
+        marginBottom: 10, cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        animation: `fadeIn 0.3s ease ${index * 0.03}s both`
+      }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: 12, flexShrink: 0,
+          background: `${color}18`, border: `1px solid ${color}30`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', color: color
+        }}>{plugin.icon}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 600, fontSize: 14, color: '#fff', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{plugin.name}</span>
+            {isInstalled && (
+              <span style={{ fontSize: 10, color: '#43e97b', background: 'rgba(67, 233, 123, 0.12)', padding: '2px 8px', borderRadius: 10, flexShrink: 0, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
+                <Check size={10} /> Installed
+              </span>
+            )}
+          </div>
+          <div style={{ fontSize: 12, color: '#7878a0', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', marginBottom: 8 }}>
+            {plugin.description}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11, color: '#555570' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Star size={11} /> {plugin.stars}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Download size={11} /> {plugin.downloads}</span>
+            <span style={{ marginLeft: 'auto', color: '#667eea', fontWeight: 500 }}>v{plugin.version}</span>
+          </div>
         </div>
       </div>
-    )}
-  </div>
-)
+
+      {installing && (
+        <div style={{ marginTop: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 11, color: '#a5b4fc' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Loader2 size={12} className="spin-anim" /> Installing...</span>
+            <span>{Math.min(Math.round(progress), 100)}%</span>
+          </div>
+          <div style={{ height: 4, background: '#1e1e35', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', width: `${Math.min(progress, 100)}%`,
+              background: 'linear-gradient(90deg, #667eea, #764ba2)',
+              borderRadius: 2, transition: 'width 0.2s ease',
+              boxShadow: '0 0 8px rgba(102, 126, 234, 0.5)'
+            }} />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 const PluginDetail: React.FC<{ plugin: Plugin; installing: boolean; progress: number; isInstalled: boolean; onInstall: () => void }> = ({
   plugin, installing, progress, isInstalled, onInstall
-}) => (
-  <div style={{ maxWidth: 680, margin: '0 auto', padding: '36px 40px', animation: 'fadeIn 0.3s ease' }}>
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24, marginBottom: 32 }}>
-      <div style={{
-        width: 88, height: 88, borderRadius: 20,
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40,
-        boxShadow: '0 8px 30px rgba(102, 126, 234, 0.3)'
-      }}>{plugin.icon}</div>
-      <div style={{ flex: 1 }}>
-        <h1 style={{ margin: '0 0 8px', fontSize: 28, color: '#fff', fontWeight: 700, letterSpacing: '-0.5px' }}>{plugin.name}</h1>
-        <div style={{ display: 'flex', gap: 16, fontSize: 13, color: '#7878a0', flexWrap: 'wrap' }}>
-          <span>By <strong style={{ color: '#a5b4fc' }}>{plugin.author}</strong></span>
-          <span>?</span>
-          <span>v{plugin.version}</span>
-          <span>?</span>
-          <span>?? {plugin.downloads}</span>
-          <span>?</span>
-          <span>? {plugin.stars}</span>
-        </div>
-      </div>
-    </div>
+}) => {
+  const iconColors = ['#667eea', '#f093fb', '#4facfa', '#43e97b', '#fa709a', '#ffa726', '#26c6da', '#ab47bc']
+  const color = iconColors[parseInt(plugin.id) % iconColors.length]
 
-    {installing ? (
-      <div style={{ marginBottom: 32, padding: '20px 24px', background: '#14142a', borderRadius: 14, border: '1px solid #2a2a45' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14, fontWeight: 600, color: '#a5b4fc' }}>
-          <span>? Installing {plugin.name}...</span>
-          <span>{progress}%</span>
-        </div>
-        <div style={{ height: 8, background: '#1e1e35', borderRadius: 4, overflow: 'hidden', marginBottom: 10 }}>
-          <div style={{
-            height: '100%', width: `${progress}%`,
-            background: 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)',
-            backgroundSize: '200% 100%', borderRadius: 4, transition: 'width 0.25s ease',
-            animation: 'shimmer 1.5s infinite linear',
-            boxShadow: '0 0 12px rgba(102, 126, 234, 0.5)'
-          }} />
-        </div>
-        <div style={{ fontSize: 12, color: '#555570' }}>
-          {progress < 30 ? 'Resolving dependencies...' : progress < 60 ? 'Downloading package...' : progress < 90 ? 'Extracting files...' : 'Finalizing installation...'}
+  return (
+    <div style={{ maxWidth: 680, margin: '0 auto', padding: '36px 40px', animation: 'fadeIn 0.3s ease' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24, marginBottom: 32 }}>
+        <div style={{
+          width: 88, height: 88, borderRadius: 20, color: '#fff',
+          background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: `0 8px 30px ${color}40`
+        }}>{React.cloneElement(plugin.icon as React.ReactElement, { size: 36 })}</div>
+        <div style={{ flex: 1 }}>
+          <h1 style={{ margin: '0 0 8px', fontSize: 28, color: '#fff', fontWeight: 700, letterSpacing: '-0.5px' }}>{plugin.name}</h1>
+          <div style={{ display: 'flex', gap: 16, fontSize: 13, color: '#7878a0', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><User size={13} /> <strong style={{ color: '#a5b4fc' }}>{plugin.author}</strong></span>
+            <span>?</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Tag size={13} /> v{plugin.version}</span>
+            <span>?</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Download size={13} /> {plugin.downloads}</span>
+            <span>?</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Star size={13} /> {plugin.stars}</span>
+          </div>
         </div>
       </div>
-    ) : (
-      <div style={{ display: 'flex', gap: 12, marginBottom: 32 }}>
-        <button className="install-btn"
-          onClick={onInstall}
-          style={{
-            padding: '12px 32px', borderRadius: 10, border: 'none',
-            background: isInstalled ? '#1e1e35' : 'linear-gradient(135deg, #667eea, #764ba2)',
-            color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700,
-            transition: 'all 0.2s', boxShadow: isInstalled ? 'none' : '0 4px 15px rgba(102, 126, 234, 0.3)'
+
+      {installing ? (
+        <div style={{ marginBottom: 32, padding: '20px 24px', background: '#14142a', borderRadius: 14, border: '1px solid #2a2a45' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14, fontWeight: 600, color: '#a5b4fc' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Loader2 size={16} className="spin-anim" /> Installing {plugin.name}...</span>
+            <span>{Math.min(Math.round(progress), 100)}%</span>
+          </div>
+          <div style={{ height: 8, background: '#1e1e35', borderRadius: 4, overflow: 'hidden', marginBottom: 10 }}>
+            <div style={{
+              height: '100%', width: `${Math.min(progress, 100)}%`,
+              background: 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)',
+              backgroundSize: '200% 100%', borderRadius: 4, transition: 'width 0.25s ease',
+              animation: 'shimmer 1.5s infinite linear',
+              boxShadow: '0 0 12px rgba(102, 126, 234, 0.5)'
+            }} />
+          </div>
+          <div style={{ fontSize: 12, color: '#555570', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Clock size={12} />
+            {progress < 30 ? 'Resolving dependencies...' : progress < 60 ? 'Downloading package...' : progress < 90 ? 'Extracting files...' : 'Finalizing installation...'}
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: 12, marginBottom: 32 }}>
+          <button className="install-btn"
+            onClick={onInstall}
+            style={{
+              padding: '12px 32px', borderRadius: 10, border: 'none', display: 'flex', alignItems: 'center', gap: 8,
+              background: isInstalled ? '#1e1e35' : 'linear-gradient(135deg, #667eea, #764ba2)',
+              color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700,
+              transition: 'all 0.2s', boxShadow: isInstalled ? 'none' : '0 4px 15px rgba(102, 126, 234, 0.3)'
+            }}>
+            {isInstalled ? <><Check size={16} /> Reinstall</> : <><Download size={16} /> Install Plugin</>}
+          </button>
+          <button style={{
+            padding: '12px 24px', borderRadius: 10, border: '1px solid #2a2a45',
+            background: 'transparent', color: '#a5b4fc', cursor: 'pointer', fontSize: 14, fontWeight: 500,
+            display: 'flex', alignItems: 'center', gap: 6
           }}>
-          {isInstalled ? '? Reinstall' : '? Install Plugin'}
-        </button>
-        <button style={{
-          padding: '12px 24px', borderRadius: 10, border: '1px solid #2a2a45',
-          background: 'transparent', color: '#a5b4fc', cursor: 'pointer', fontSize: 14, fontWeight: 500
-        }}>?? View Source</button>
-        <button style={{
-          padding: '12px 24px', borderRadius: 10, border: '1px solid #2a2a45',
-          background: 'transparent', color: '#a5b4fc', cursor: 'pointer', fontSize: 14, fontWeight: 500
-        }}>?? Report</button>
+            <Folder size={16} /> View Source
+          </button>
+          <button style={{
+            padding: '12px 24px', borderRadius: 10, border: '1px solid #2a2a45',
+            background: 'transparent', color: '#a5b4fc', cursor: 'pointer', fontSize: 14, fontWeight: 500,
+            display: 'flex', alignItems: 'center', gap: 6
+          }}>
+            <Flag size={16} /> Report
+          </button>
+        </div>
+      )}
+
+      <div style={{ marginBottom: 32 }}>
+        <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>About</h3>
+        <p style={{ margin: 0, color: '#9898b0', lineHeight: 1.8, fontSize: 14 }}>{plugin.description}</p>
       </div>
-    )}
 
-    <div style={{ marginBottom: 32 }}>
-      <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>About</h3>
-      <p style={{ margin: 0, color: '#9898b0', lineHeight: 1.8, fontSize: 14 }}>{plugin.description}</p>
-    </div>
+      <div style={{ marginBottom: 32 }}>
+        <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>Tags</h3>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {plugin.tags.map(tag => (
+            <span key={tag} style={{
+              padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500,
+              background: 'rgba(102, 126, 234, 0.1)', color: '#a5b4fc', border: '1px solid rgba(102, 126, 234, 0.2)',
+              display: 'flex', alignItems: 'center', gap: 5
+            }}>
+              <Hash size={11} /> {tag}
+            </span>
+          ))}
+        </div>
+      </div>
 
-    <div style={{ marginBottom: 32 }}>
-      <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>Tags</h3>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {plugin.tags.map(tag => (
-          <span key={tag} style={{
-            padding: '5px 14px', borderRadius: 20, fontSize: 12,
-            background: 'rgba(102, 126, 234, 0.1)', color: '#a5b4fc', border: '1px solid rgba(102, 126, 234, 0.2)', fontWeight: 500
-          }}>#{tag}</span>
+      <div style={{ marginBottom: 32 }}>
+        <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>Statistics</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+          <StatCard label="Rating" value={`${plugin.rating} / 5.0`} icon={<Star size={14} />} />
+          <StatCard label="Downloads" value={plugin.downloads} icon={<Download size={14} />} />
+          <StatCard label="Monthly" value={plugin.monthlyDownloads} icon={<Calendar size={14} />} />
+          <StatCard label="Version" value={plugin.version} icon={<Tag size={14} />} />
+        </div>
+      </div>
+
+      <div>
+        <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>Reviews</h3>
+        {[
+          { user: 'Alex C.', comment: 'Excellent plugin! Greatly improved my workflow.', rating: 5 },
+          { user: 'Sarah L.', comment: 'Works well, but could use some performance improvements.', rating: 4 },
+        ].map((review, i) => (
+          <div key={i} style={{ padding: 16, background: '#111122', borderRadius: 12, marginBottom: 10, border: '1px solid #1e1e35' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontWeight: 600, fontSize: 13, color: '#fff', display: 'flex', alignItems: 'center', gap: 6 }}><User size={13} /> {review.user}</span>
+              <span style={{ fontSize: 13, color: '#ffa726', display: 'flex', gap: 2 }}>
+                {Array.from({ length: review.rating }).map((_, j) => <Star key={j} size={12} fill="#ffa726" />)}
+              </span>
+            </div>
+            <p style={{ margin: 0, fontSize: 13, color: '#9898b0', lineHeight: 1.6 }}>{review.comment}</p>
+          </div>
         ))}
       </div>
     </div>
+  )
+}
 
-    <div style={{ marginBottom: 32 }}>
-      <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>Statistics</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-        <StatCard label="Rating" value={`${plugin.rating} / 5.0`} icon="?" />
-        <StatCard label="Downloads" value={plugin.downloads} icon="??" />
-        <StatCard label="Monthly" value={plugin.monthlyDownloads} icon="??" />
-        <StatCard label="Version" value={plugin.version} icon="???" />
-      </div>
-    </div>
-
-    <div>
-      <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>Reviews</h3>
-      {[
-        { user: 'Alex C.', comment: 'Excellent plugin! Greatly improved my workflow.', rating: 5 },
-        { user: 'Sarah L.', comment: 'Works well, but could use some performance improvements.', rating: 4 },
-      ].map((review, i) => (
-        <div key={i} style={{ padding: 16, background: '#111122', borderRadius: 12, marginBottom: 10, border: '1px solid #1e1e35' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontWeight: 600, fontSize: 13, color: '#fff' }}>{review.user}</span>
-            <span style={{ fontSize: 13, color: '#ffa726' }}>{'?'.repeat(review.rating)}</span>
-          </div>
-          <p style={{ margin: 0, fontSize: 13, color: '#9898b0', lineHeight: 1.6 }}>{review.comment}</p>
-        </div>
-      ))}
-    </div>
-  </div>
-)
-
-const StatCard: React.FC<{ label: string; value: string; icon: string }> = ({ label, value, icon }) => (
+const StatCard: React.FC<{ label: string; value: string; icon: React.ReactNode }> = ({ label, value, icon }) => (
   <div style={{ padding: 16, background: '#111122', borderRadius: 12, border: '1px solid #1e1e35' }}>
-    <div style={{ fontSize: 12, color: '#555570', marginBottom: 6 }}>{icon} {label}</div>
+    <div style={{ fontSize: 12, color: '#555570', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>{icon} {label}</div>
     <div style={{ fontSize: 16, color: '#fff', fontWeight: 700 }}>{value}</div>
   </div>
 )
