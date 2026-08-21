@@ -46,7 +46,6 @@
     "build": "tsc -b && vite build",
     "build:lib": "tsc -p tsconfig.lib.json",
     "build:all": "npm run build:lib && vite build",
-    "prepare": "npm run build:all",
     "preview": "vite preview"
   },
   "dependencies": {
