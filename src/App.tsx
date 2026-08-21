@@ -80,7 +80,7 @@ const App: React.FC = () => {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 14, fontWeight: 700, color: '#fff', flexShrink: 0
           }}>D</div>
-          {!sidebarCollapsed && <span style={{ fontSize: 16, fontWeight: 600, color: '#fff' }}>DSH Plugin Market</span>}
+          {!sidebarCollapsed && <span style={{ fontSize: 16, fontWeight: 600, color: '#fff' }}>DSH Marketplace</span>}
         </div>
 
         {/* Nav Items */}
@@ -88,7 +88,7 @@ const App: React.FC = () => {
           {[
             { id: 'home', label: 'Home', icon: '🏠' },
             { id: 'chat', label: 'Chat', icon: '💬' },
-            { id: 'plugins', label: 'Plugin Market', icon: '🧩' },
+            { id: 'plugins', label: 'Marketplace', icon: '🧩' },
             { id: 'workspace', label: 'Workspace', icon: '📁' },
             { id: 'settings', label: 'Settings', icon: '⚙️' },
           ].map(item => (
@@ -156,7 +156,7 @@ const App: React.FC = () => {
           {/* Header */}
           <div style={{ padding: '16px', borderBottom: '1px solid #2a2a3e' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <h2 style={{ margin: 0, fontSize: 18, color: '#fff' }}>Plugin Market</h2>
+              <h2 style={{ margin: 0, fontSize: 18, color: '#fff' }}>Marketplace</h2>
               <span style={{ fontSize: 12, color: '#666', background: '#1a1a2e', padding: '4px 8px', borderRadius: 12 }}>
                 {filteredPlugins.length} plugins
               </span>
