@@ -1,2 +1,5 @@
 # DSH Marketplace bundle patch
 # Registers the marketplace as a recognized DSH profile layer.
+- insert:
+    - id: dsh-marketplace
+      name: 'dsh-marketplace'
