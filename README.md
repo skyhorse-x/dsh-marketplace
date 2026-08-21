@@ -25,46 +25,44 @@ dsh plugin --profile web add ./dsh-marketplace
 git clone git@github.com:skyhorse-x/dsh-marketplace.git
 cd dsh-marketplace
 pnpm install
-pnpm run dev
+pnpm run build:all
 ```
-
-默认访问地址：`http://localhost:5173`
 
 ### 构建生产版本
 
 ```bash
-pnpm run build
+# 构建库文件（lib/）和前端（dist/）
+pnpm run build:all
 ```
 
 ## 功能介绍
 
 ### 插件浏览
-
 卡片式布局展示插件，包含图标、评分、下载量等关键信息。
 
 ### 分类筛选
-
 支持推荐、已安装、更新三种标签页切换，快速筛选目标插件。
 
 ### 实时搜索
-
 按名称、描述、作者快速搜索插件。
 
 ### 插件详情
-
 右侧面板展示完整插件信息：功能介绍、版本信息、用户评价。
 
 ### 一键安装
-
 支持插件的安装与卸载操作。
 
 ### 响应式布局
-
 三栏自适应布局，侧边栏可折叠。
 
 ### 暗色主题
-
 默认深色界面，视觉风格与 DSH 桌面端统一。
+
+## 技术架构
+
+- **服务端** (`lib/index.js`): Cordis 插件，通过 webserver fallback 提供静态资源
+- **浏览器端** (`lib/client.js`): ModuleLoader 模块，注册侧边栏入口和面板
+- **配置** (`cordis.patch.yml`): 声明式插件注册
 
 ## 许可证
 

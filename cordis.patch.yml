@@ -1,5 +1,7 @@
 # DSH Marketplace bundle patch
-# Registers the marketplace as a recognized DSH profile layer.
+# Registers the marketplace as a DSH profile layer with proper plugin registration.
 - insert:
-    - id: dsh-marketplace
+    - id: marketplace
       name: 'dsh-marketplace'
+      config:
+        distIndex: !!js require.resolve("dsh-marketplace/dist/index.html")
