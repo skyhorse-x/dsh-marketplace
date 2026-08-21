@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   Home, MessageCircle, Puzzle, FolderOpen, Settings, Search, Star, Download,
   Calendar, Tag, Check, RefreshCw, Eye, Brain, PenTool, Store, Bot, Palette,
   Smartphone, Wrench, Globe, Lock, Image, Shield, Radio, Glasses,
   ChevronRight, ChevronLeft, Loader2, Folder, Flag, Sparkles, Zap, Code,
-  Package, TrendingUp, Clock, User, Hash, ExternalLink, AlertTriangle
+  Package, TrendingUp, Clock, User, Hash, ArrowUpCircle, AlertCircle,
+  X, ExternalLink, Heart, Info
 } from 'lucide-react'
 
 interface Plugin {
@@ -13,6 +14,7 @@ interface Plugin {
   description: string
   author: string
   version: string
+  latestVersion: string
   downloads: string
   monthlyDownloads: string
   stars: string
@@ -21,467 +23,1280 @@ interface Plugin {
   category: string
   tags: string[]
   icon: React.ReactNode
+  changelog?: string
+}
+
+function compareVersions(v1: string, v2: string): number {
+  const parts1 = v1.replace(/[^0-9.]/g, '').split('.').map(Number)
+  const parts2 = v2.replace(/[^0-9.]/g, '').split('.').map(Number)
+  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+    const a = parts1[i] || 0
+    const b = parts2[i] || 0
+    if (a > b) return 1
+    if (a < b) return -1
+  }
+  return 0
+}
+
+function hasUpdate(current: string, latest: string): boolean {
+  return compareVersions(latest, current) > 0
 }
 
 const plugins: Plugin[] = [
-  { id: '1', name: 'dsh-vision-router', description: 'Eyes for text-only DeepSeek Harness agents: built-in free vision chain (no key) + pixel-level vision tools (Q&A, grounding, crop, pixel diff, colors, OCR, SVG trace, cutout, screenshots).', author: 'Community', version: '1.7.3', downloads: '26.4k', monthlyDownloads: '914', stars: '26.4k', installed: false, rating: 4.9, category: 'ai', tags: ['vision', 'ocr', 'image'], icon: <Eye size={24} /> },
-  { id: '2', name: 'dsh-context', description: 'A DeepSeek Harness plugin for context insight and management, with context dashboard and context command, for understanding how the context is made of, and how it evolves.', author: 'Community', version: '0.19.2', downloads: '9.9k', monthlyDownloads: '626', stars: '9.9k', installed: false, rating: 4.7, category: 'productivity', tags: ['context', 'dashboard'], icon: <Brain size={24} /> },
-  { id: '3', name: '@zseven-w/dsh-openpencil', description: 'OpenPencil plugin for DSH with exact multi-frame previews, an interactive canvas, and managed editor workbenches.', author: 'zseven-w', version: '0.1.0-rc.1', downloads: '132', monthlyDownloads: '132', stars: '132', installed: false, rating: 4.5, category: 'creative', tags: ['canvas', 'editor'], icon: <PenTool size={24} /> },
-  { id: '4', name: '@sanqi-normal/dsh-webui-market-plugin', description: 'In-harness community plugin market for the dsh web GUI: browse awesome-dsh-plugin.com, install and uninstall plugins into a profile.', author: 'sanqi-normal', version: '0.5.5', downloads: '96', monthlyDownloads: '96', stars: '96', installed: false, rating: 4.3, category: 'utility', tags: ['market', 'browser'], icon: <Store size={24} /> },
-  { id: '5', name: '@mars-sea/dsh-commandcode-provider', description: "Unofficial DeepSeek Harness LLM provider plugin for Command Code, ported from pi-commandcode-provider (MIT). Registers the 'commandcode' provider route.", author: 'mars-sea', version: '0.6.0', downloads: '77', monthlyDownloads: '77', stars: '77', installed: false, rating: 4.4, category: 'ai', tags: ['llm', 'provider'], icon: <Bot size={24} /> },
-  { id: '6', name: 'dsh-dream-skin', description: 'DeepSeek Harness ������� (Dream Skin for DSH): 8 �� iOS / Linear ʽ����ɫ���ĸ��ʸ����� + �����Ч�� + ÿƤ���ܱ��� + ǿ��ɫ + ���������', author: 'Community', version: '0.4.1', downloads: '5.5k', monthlyDownloads: '70', stars: '5.5k', installed: false, rating: 4.8, category: 'theme', tags: ['skin', 'theme', 'ui'], icon: <Palette size={24} /> },
-  { id: '7', name: 'dsh-mobile', description: 'DeepSeek Harness �ƶ��������밲ȫ�������ʲ����֧�� Android App ���ֻ��������', author: 'Community', version: '0.1.0-alpha.24', downloads: '5.7k', monthlyDownloads: '67', stars: '5.7k', installed: false, rating: 4.6, category: 'utility', tags: ['mobile', 'android'], icon: <Smartphone size={24} /> },
-  { id: '8', name: 'dsh-web-plugin-manager', description: 'Manage DeepSeek Harness (DSH) plugins from the Web UI: list, enable/disable, install/remove, environments, and a GitHub-awesome-driven marketplace.', author: 'Community', version: '0.4.6', downloads: '62', monthlyDownloads: '62', stars: '62', installed: false, rating: 4.2, category: 'utility', tags: ['manager', 'plugins'], icon: <Wrench size={24} /> },
-  { id: '9', name: 'dsh-client-auto-continue', description: 'DSH Web UI plugin: automatically sends "����" (continue) when a request is interrupted by network errors or other non-human causes.', author: 'Community', version: '0.7.5', downloads: '4.7k', monthlyDownloads: '34', stars: '4.7k', installed: true, rating: 4.5, category: 'productivity', tags: ['auto', 'continue'], icon: <RefreshCw size={24} /> },
-  { id: '10', name: 'dsh-remote', description: 'Remote-work assistant for DeepSeek Harness: connect SSH (password/key/agent/keyboard-interactive/proxy jump), pick a remote workspace, operate on it with 21 rw_* tools.', author: 'Community', version: '0.8.6', downloads: '30', monthlyDownloads: '30', stars: '30', installed: false, rating: 4.7, category: 'development', tags: ['ssh', 'remote'], icon: <Globe size={24} /> },
-  { id: '11', name: 'dsh-passwords', description: 'dsh-passwords: a server-grade gateway that turns DeepSeek Harness into a multi-tenant platform �� remote access + automatic HTTPS, per-subuser permissions & quotas.', author: 'Community', version: '2.5.4', downloads: '15', monthlyDownloads: '15', stars: '15', installed: false, rating: 4.4, category: 'security', tags: ['auth', 'multi-tenant'], icon: <Lock size={24} /> },
-  { id: '12', name: 'dsh-any-background', description: 'Appearance plugin for DeepSeek Harness: custom theme color (PS-style color wheel), background wallpaper with opacity/blur controls.', author: 'Community', version: '0.1.9', downloads: '15', monthlyDownloads: '15', stars: '15', installed: false, rating: 4.3, category: 'theme', tags: ['background', 'wallpaper'], icon: <Image size={24} /> },
-  { id: '13', name: 'dsh-config-manager', description: 'DSH Config Manager �� backup / export / import / migrate DSH configuration (dual-face Cordis plugin: host engine + web UI).', author: 'Community', version: '0.1.40', downloads: '5.2k', monthlyDownloads: '7', stars: '5.2k', installed: false, rating: 4.6, category: 'utility', tags: ['config', 'backup'], icon: <Settings size={24} /> },
-  { id: '14', name: 'upstream-radar', description: 'Always-on dependency security monitoring for DeepSeek Harness (DSH) plugins: find exact installed or candidate transitive vulnerable paths.', author: 'Community', version: '0.38.0', downloads: '10.3k', monthlyDownloads: '6', stars: '10.3k', installed: false, rating: 4.8, category: 'security', tags: ['security', 'monitor'], icon: <Radio size={24} /> },
-  { id: '15', name: 'dsh-free-vision', description: 'Free vision plugin for DeepSeek Harness (dsh): image understanding for text-only models with free-tier providers (Qwen3-VL-Flash / DeepSeek-OCR / Doubao).', author: 'Community', version: '1.0.8', downloads: '5.3k', monthlyDownloads: '6', stars: '5.3k', installed: false, rating: 4.7, category: 'ai', tags: ['vision', 'free'], icon: <Glasses size={24} /> },
+  { id: '1', name: 'dsh-vision-router', description: 'Eyes for text-only DeepSeek Harness agents: built-in free vision chain (no key) + pixel-level vision tools (Q&A, grounding, crop, pixel diff, colors, OCR, SVG trace, cutout, screenshots).', author: 'Community', version: '1.7.3', latestVersion: '1.8.0', downloads: '26.4k', monthlyDownloads: '914', stars: '26.4k', installed: false, rating: 4.9, category: 'ai', tags: ['vision', 'ocr', 'image'], icon: <Eye size={24} />, changelog: 'Added SVG trace tool, improved OCR accuracy, fixed crop coordinate bug.' },
+  { id: '2', name: 'dsh-context', description: 'A DeepSeek Harness plugin for context insight and management, with context dashboard and context command.', author: 'Community', version: '0.19.2', latestVersion: '0.20.0', downloads: '9.9k', monthlyDownloads: '626', stars: '9.9k', installed: false, rating: 4.7, category: 'productivity', tags: ['context', 'dashboard'], icon: <Brain size={24} />, changelog: 'New context evolution timeline, export to JSON, dark mode support.' },
+  { id: '3', name: '@zseven-w/dsh-openpencil', description: 'OpenPencil plugin for DSH with exact multi-frame previews, an interactive canvas, and managed editor workbenches.', author: 'zseven-w', version: '0.1.0-rc.1', latestVersion: '0.1.0-rc.1', downloads: '132', monthlyDownloads: '132', stars: '132', installed: false, rating: 4.5, category: 'creative', tags: ['canvas', 'editor'], icon: <PenTool size={24} /> },
+  { id: '4', name: '@sanqi-normal/dsh-webui-market-plugin', description: 'In-harness community plugin market for the dsh web GUI.', author: 'sanqi-normal', version: '0.5.5', latestVersion: '0.6.0', downloads: '96', monthlyDownloads: '96', stars: '96', installed: false, rating: 4.3, category: 'utility', tags: ['market', 'browser'], icon: <Store size={24} />, changelog: 'UI refresh, batch install support.' },
+  { id: '5', name: '@mars-sea/dsh-commandcode-provider', description: 'Unofficial DeepSeek Harness LLM provider plugin for Command Code.', author: 'mars-sea', version: '0.6.0', latestVersion: '0.6.0', downloads: '77', monthlyDownloads: '77', stars: '77', installed: false, rating: 4.4, category: 'ai', tags: ['llm', 'provider'], icon: <Bot size={24} /> },
+  { id: '6', name: 'dsh-dream-skin', description: 'DeepSeek Harness 换肤插件: 8 套 iOS / Linear 式清冷色调的高质感主题 + 流光光效带 + 每皮智能背景 + 强调色 + 主题包分享', author: 'Community', version: '0.4.1', latestVersion: '0.5.0', downloads: '5.5k', monthlyDownloads: '70', stars: '5.5k', installed: false, rating: 4.8, category: 'theme', tags: ['skin', 'theme', 'ui'], icon: <Palette size={24} />, changelog: '3 new skins (Midnight, Aurora, Sakura), improved blur performance.' },
+  { id: '7', name: 'dsh-mobile', description: 'DeepSeek Harness 移动端适配与安全域网访问插件，支持 Android App 和手机浏览器。', author: 'Community', version: '0.1.0-alpha.24', latestVersion: '0.1.0-alpha.25', downloads: '5.7k', monthlyDownloads: '67', stars: '5.7k', installed: false, rating: 4.6, category: 'utility', tags: ['mobile', 'android'], icon: <Smartphone size={24} />, changelog: 'Fixed iOS Safari layout issues, improved touch handling.' },
+  { id: '8', name: 'dsh-web-plugin-manager', description: 'Manage DeepSeek Harness (DSH) plugins from the Web UI.', author: 'Community', version: '0.4.6', latestVersion: '0.4.6', downloads: '62', monthlyDownloads: '62', stars: '62', installed: false, rating: 4.2, category: 'utility', tags: ['manager', 'plugins'], icon: <Wrench size={24} /> },
+  { id: '9', name: 'dsh-client-auto-continue', description: 'DSH Web UI plugin: automatically sends continue when a request is interrupted.', author: 'Community', version: '0.7.5', latestVersion: '0.8.0', downloads: '4.7k', monthlyDownloads: '34', stars: '4.7k', installed: true, rating: 4.5, category: 'productivity', tags: ['auto', 'continue'], icon: <RefreshCw size={24} />, changelog: 'Smart retry with exponential backoff, configurable trigger conditions.' },
+  { id: '10', name: 'dsh-remote', description: 'Remote-work assistant for DeepSeek Harness: connect SSH, pick a remote workspace, operate on it with 21 rw_* tools.', author: 'Community', version: '0.8.6', latestVersion: '0.9.0', downloads: '30', monthlyDownloads: '30', stars: '30', installed: false, rating: 4.7, category: 'development', tags: ['ssh', 'remote'], icon: <Globe size={24} />, changelog: 'Added SFTP browser, tunnel manager, session persistence.' },
+  { id: '11', name: 'dsh-passwords', description: 'dsh-passwords: a server-grade gateway that turns DeepSeek Harness into a multi-tenant platform.', author: 'Community', version: '2.5.4', latestVersion: '2.6.0', downloads: '15', monthlyDownloads: '15', stars: '15', installed: false, rating: 4.4, category: 'security', tags: ['auth', 'multi-tenant'], icon: <Lock size={24} />, changelog: 'OAuth2 SSO integration, improved rate limiting.' },
+  { id: '12', name: 'dsh-any-background', description: 'Appearance plugin for DeepSeek Harness: custom theme color, background wallpaper with opacity/blur controls.', author: 'Community', version: '0.1.9', latestVersion: '0.2.0', downloads: '15', monthlyDownloads: '15', stars: '15', installed: false, rating: 4.3, category: 'theme', tags: ['background', 'wallpaper'], icon: <Image size={24} />, changelog: 'Gradient backgrounds, per-profile wallpaper presets.' },
+  { id: '13', name: 'dsh-config-manager', description: 'DSH Config Manager: backup / export / import / migrate DSH configuration.', author: 'Community', version: '0.1.40', latestVersion: '0.1.41', downloads: '5.2k', monthlyDownloads: '7', stars: '5.2k', installed: false, rating: 4.6, category: 'utility', tags: ['config', 'backup'], icon: <Settings size={24} />, changelog: 'Added config diff viewer, scheduled auto-backup.' },
+  { id: '14', name: 'upstream-radar', description: 'Always-on dependency security monitoring for DeepSeek Harness (DSH) plugins.', author: 'Community', version: '0.38.0', latestVersion: '0.39.0', downloads: '10.3k', monthlyDownloads: '6', stars: '10.3k', installed: false, rating: 4.8, category: 'security', tags: ['security', 'monitor'], icon: <Radio size={24} />, changelog: 'Faster vulnerability scanning, Slack notifications.' },
+  { id: '15', name: 'dsh-free-vision', description: 'Free vision plugin for DeepSeek Harness: image understanding for text-only models with free-tier providers.', author: 'Community', version: '1.0.8', latestVersion: '1.1.0', downloads: '5.3k', monthlyDownloads: '6', stars: '5.3k', installed: false, rating: 4.7, category: 'ai', tags: ['vision', 'free'], icon: <Glasses size={24} />, changelog: 'Added Doubao provider, batch image processing.' },
 ]
+
+type TabType = 'recommended' | 'installed' | 'updates'
+type NavPage = 'home' | 'chat' | 'plugins' | 'settings'
 
 const categories = [
-  { id: 'all', label: 'All', icon: <Sparkles size={14} /> },
-  { id: 'ai', label: 'AI & Vision', icon: <Bot size={14} /> },
-  { id: 'development', label: 'Development', icon: <Code size={14} /> },
-  { id: 'productivity', label: 'Productivity', icon: <Zap size={14} /> },
-  { id: 'theme', label: 'Themes', icon: <Palette size={14} /> },
-  { id: 'security', label: 'Security', icon: <Shield size={14} /> },
-  { id: 'utility', label: 'Utility', icon: <Wrench size={14} /> },
-  { id: 'creative', label: 'Creative', icon: <PenTool size={14} /> },
+  { id: 'all', name: '全部', icon: <Folder size={16} /> },
+  { id: 'ai', name: 'AI', icon: <Brain size={16} /> },
+  { id: 'productivity', name: '效率', icon: <Zap size={16} /> },
+  { id: 'creative', name: '创作', icon: <PenTool size={16} /> },
+  { id: 'utility', name: '工具', icon: <Wrench size={16} /> },
+  { id: 'theme', name: '主题', icon: <Palette size={16} /> },
+  { id: 'development', name: '开发', icon: <Code size={16} /> },
+  { id: 'security', name: '安全', icon: <Shield size={16} /> },
 ]
 
-const navItems = [
-  { id: 'home', label: 'Home', icon: <Home size={18} /> },
-  { id: 'chat', label: 'Chat', icon: <MessageCircle size={18} /> },
-  { id: 'plugins', label: 'Marketplace', icon: <Puzzle size={18} /> },
-  { id: 'workspace', label: 'Workspace', icon: <FolderOpen size={18} /> },
-  { id: 'settings', label: 'Settings', icon: <Settings size={18} /> },
-]
+// 样式常量
+const styles = {
+  app: {
+    display: 'flex',
+    height: '100vh',
+    width: '100vw',
+    backgroundColor: '#0f0f1a',
+    color: '#e4e4e7',
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    overflow: 'hidden' as const,
+  },
+  sidebar: {
+    width: '240px',
+    backgroundColor: '#12121f',
+    borderRight: '1px solid #1e1e30',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    flexShrink: 0,
+    transition: 'width 0.3s ease',
+  },
+  sidebarCollapsed: {
+    width: '64px',
+  },
+  sidebarHeader: {
+    padding: '20px 16px',
+    borderBottom: '1px solid #1e1e30',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  logo: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  logoText: {
+    color: '#fff',
+    fontWeight: 700,
+    fontSize: '14px',
+  },
+  sidebarTitle: {
+    fontSize: '15px',
+    fontWeight: 600,
+    color: '#e4e4e7',
+    whiteSpace: 'nowrap' as const,
+    overflow: 'hidden',
+  },
+  nav: {
+    flex: 1,
+    padding: '12px 8px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '4px',
+  },
+  navItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '10px 12px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    color: '#9ca3af',
+    fontSize: '14px',
+    fontWeight: 500,
+    border: 'none',
+    background: 'transparent',
+    width: '100%',
+    textAlign: 'left' as const,
+  },
+  navItemActive: {
+    backgroundColor: '#1e1e30',
+    color: '#e4e4e7',
+  },
+  navItemHover: {
+    backgroundColor: '#1a1a2a',
+    color: '#e4e4e7',
+  },
+  navBadge: {
+    marginLeft: 'auto',
+    backgroundColor: '#667eea',
+    color: '#fff',
+    fontSize: '11px',
+    fontWeight: 600,
+    padding: '2px 8px',
+    borderRadius: '10px',
+    minWidth: '20px',
+    textAlign: 'center' as const,
+  },
+  sidebarFooter: {
+    padding: '12px 8px',
+    borderTop: '1px solid #1e1e30',
+  },
+  collapseBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    padding: '10px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    color: '#9ca3af',
+    fontSize: '14px',
+    fontWeight: 500,
+    border: 'none',
+    background: 'transparent',
+  },
+  main: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    overflow: 'hidden',
+  },
+  header: {
+    padding: '16px 24px',
+    borderBottom: '1px solid #1e1e30',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexShrink: 0,
+  },
+  headerLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+  },
+  headerTitle: {
+    fontSize: '20px',
+    fontWeight: 700,
+    color: '#e4e4e7',
+  },
+  headerSubtitle: {
+    fontSize: '13px',
+    color: '#9ca3af',
+    marginTop: '2px',
+  },
+  headerRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  searchBox: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    backgroundColor: '#1a1a2a',
+    border: '1px solid #2a2a3e',
+    borderRadius: '8px',
+    padding: '8px 12px',
+    width: '280px',
+    transition: 'border-color 0.2s ease',
+  },
+  searchInput: {
+    background: 'transparent',
+    border: 'none',
+    outline: 'none',
+    color: '#e4e4e7',
+    fontSize: '13px',
+    width: '100%',
+    placeholder: '#6b7280',
+  },
+  tabs: {
+    display: 'flex',
+    gap: '4px',
+    padding: '0 24px',
+    borderBottom: '1px solid #1e1e30',
+    flexShrink: 0,
+  },
+  tab: {
+    padding: '12px 16px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: 500,
+    color: '#9ca3af',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    background: 'transparent',
+    border: 'none',
+    borderBottom: '2px solid transparent',
+  } as React.CSSProperties,
+  tabActive: {
+    color: '#667eea',
+    borderBottomColor: '#667eea',
+  },
+  tabBadge: {
+    backgroundColor: '#667eea',
+    color: '#fff',
+    fontSize: '11px',
+    fontWeight: 600,
+    padding: '1px 6px',
+    borderRadius: '8px',
+    minWidth: '18px',
+    textAlign: 'center' as const,
+  },
+  tabBadgeGray: {
+    backgroundColor: '#374151',
+    color: '#9ca3af',
+  },
+  content: {
+    flex: 1,
+    display: 'flex',
+    overflow: 'hidden',
+  },
+  pluginList: {
+    flex: 1,
+    overflow: 'auto',
+    padding: '16px 24px',
+  },
+  categoryBar: {
+    display: 'flex',
+    gap: '8px',
+    marginBottom: '16px',
+    flexWrap: 'wrap' as const,
+  },
+  categoryChip: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 12px',
+    borderRadius: '20px',
+    fontSize: '12px',
+    fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    border: '1px solid #2a2a3e',
+    backgroundColor: '#1a1a2a',
+    color: '#9ca3af',
+  },
+  categoryChipActive: {
+    backgroundColor: '#667eea',
+    borderColor: '#667eea',
+    color: '#fff',
+  },
+  pluginGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+    gap: '12px',
+  },
+  pluginCard: {
+    backgroundColor: '#1a1a2a',
+    border: '1px solid #2a2a3e',
+    borderRadius: '12px',
+    padding: '16px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    position: 'relative' as const,
+  },
+  pluginCardHover: {
+    borderColor: '#667eea',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 20px rgba(102, 126, 234, 0.15)',
+  },
+  pluginCardSelected: {
+    borderColor: '#667eea',
+    backgroundColor: '#1e1e30',
+  },
+  updateIndicator: {
+    position: 'absolute' as const,
+    top: '12px',
+    right: '12px',
+    backgroundColor: '#f59e0b',
+    color: '#fff',
+    fontSize: '10px',
+    fontWeight: 700,
+    padding: '3px 8px',
+    borderRadius: '6px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    zIndex: 1,
+  },
+  pluginHeader: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '12px',
+    marginBottom: '10px',
+  },
+  pluginIcon: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '10px',
+    backgroundColor: '#2a2a3e',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#667eea',
+    flexShrink: 0,
+  },
+  pluginInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  pluginName: {
+    fontSize: '14px',
+    fontWeight: 600,
+    color: '#e4e4e7',
+    marginBottom: '2px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap' as const,
+  },
+  pluginAuthor: {
+    fontSize: '12px',
+    color: '#9ca3af',
+  },
+  pluginDescription: {
+    fontSize: '13px',
+    color: '#9ca3af',
+    lineHeight: 1.5,
+    marginBottom: '12px',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical' as const,
+    overflow: 'hidden',
+  },
+  versionRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '10px',
+    fontSize: '12px',
+  },
+  versionCurrent: {
+    color: '#9ca3af',
+    backgroundColor: '#2a2a3e',
+    padding: '2px 8px',
+    borderRadius: '4px',
+  },
+  versionArrow: {
+    color: '#f59e0b',
+    fontWeight: 700,
+  },
+  versionLatest: {
+    color: '#f59e0b',
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    padding: '2px 8px',
+    borderRadius: '4px',
+    fontWeight: 600,
+  },
+  versionUpToDate: {
+    color: '#10b981',
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    padding: '2px 8px',
+    borderRadius: '4px',
+    fontWeight: 600,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+  },
+  pluginFooter: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  pluginStats: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    fontSize: '12px',
+    color: '#6b7280',
+  },
+  statItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+  },
+  starRating: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '2px',
+    color: '#f59e0b',
+  },
+  pluginActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  btnInstall: {
+    backgroundColor: '#667eea',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    padding: '6px 14px',
+    fontSize: '12px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    transition: 'all 0.2s ease',
+  },
+  btnInstalled: {
+    backgroundColor: '#2a2a3e',
+    color: '#10b981',
+    border: 'none',
+    borderRadius: '6px',
+    padding: '6px 14px',
+    fontSize: '12px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+  },
+  btnUpdate: {
+    backgroundColor: '#f59e0b',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    padding: '6px 14px',
+    fontSize: '12px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    transition: 'all 0.2s ease',
+  },
+  detailPanel: {
+    width: '360px',
+    backgroundColor: '#12121f',
+    borderLeft: '1px solid #1e1e30',
+    overflow: 'auto',
+    flexShrink: 0,
+    display: 'flex',
+    flexDirection: 'column' as const,
+  },
+  detailHeader: {
+    padding: '20px',
+    borderBottom: '1px solid #1e1e30',
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '14px',
+  },
+  detailIcon: {
+    width: '52px',
+    height: '52px',
+    borderRadius: '14px',
+    backgroundColor: '#2a2a3e',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#667eea',
+    flexShrink: 0,
+  },
+  detailTitle: {
+    fontSize: '18px',
+    fontWeight: 700,
+    color: '#e4e4e7',
+    marginBottom: '4px',
+  },
+  detailAuthor: {
+    fontSize: '13px',
+    color: '#9ca3af',
+    marginBottom: '8px',
+  },
+  detailRating: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    color: '#f59e0b',
+    fontSize: '13px',
+  },
+  detailBody: {
+    flex: 1,
+    padding: '20px',
+  },
+  detailSection: {
+    marginBottom: '20px',
+  },
+  detailSectionTitle: {
+    fontSize: '13px',
+    fontWeight: 600,
+    color: '#9ca3af',
+    marginBottom: '8px',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
+  },
+  detailDescription: {
+    fontSize: '14px',
+    color: '#d1d5db',
+    lineHeight: 1.6,
+  },
+  detailChangelog: {
+    fontSize: '13px',
+    color: '#d1d5db',
+    lineHeight: 1.6,
+    backgroundColor: '#1a1a2a',
+    padding: '12px',
+    borderRadius: '8px',
+    border: '1px solid #2a2a3e',
+  },
+  detailTags: {
+    display: 'flex',
+    flexWrap: 'wrap' as const,
+    gap: '6px',
+  },
+  detailTag: {
+    backgroundColor: '#2a2a3e',
+    color: '#9ca3af',
+    fontSize: '11px',
+    padding: '4px 10px',
+    borderRadius: '12px',
+  },
+  detailStats: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '10px',
+  },
+  detailStatCard: {
+    backgroundColor: '#1a1a2a',
+    border: '1px solid #2a2a3e',
+    borderRadius: '8px',
+    padding: '12px',
+    textAlign: 'center' as const,
+  },
+  detailStatValue: {
+    fontSize: '16px',
+    fontWeight: 700,
+    color: '#e4e4e7',
+  },
+  detailStatLabel: {
+    fontSize: '11px',
+    color: '#9ca3af',
+    marginTop: '2px',
+  },
+  detailFooter: {
+    padding: '16px 20px',
+    borderTop: '1px solid #1e1e30',
+    display: 'flex',
+    gap: '10px',
+  },
+  detailBtnPrimary: {
+    flex: 1,
+    backgroundColor: '#667eea',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '10px 16px',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    transition: 'all 0.2s ease',
+  },
+  detailBtnUpdate: {
+    flex: 1,
+    backgroundColor: '#f59e0b',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '10px 16px',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    transition: 'all 0.2s ease',
+  },
+  detailBtnSecondary: {
+    backgroundColor: '#2a2a3e',
+    color: '#e4e4e7',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '10px 16px',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    transition: 'all 0.2s ease',
+  },
+  detailBtnDanger: {
+    backgroundColor: '#2a2a3e',
+    color: '#ef4444',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '10px 16px',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
+    transition: 'all 0.2s ease',
+  },
+  emptyState: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    color: '#6b7280',
+    gap: '12px',
+  },
+  emptyIcon: {
+    opacity: 0.4,
+  },
+  emptyText: {
+    fontSize: '14px',
+    fontWeight: 500,
+  },
+  emptySubtext: {
+    fontSize: '12px',
+    color: '#6b7280',
+  },
+  pageContainer: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    overflow: 'hidden',
+  },
+  pageContent: {
+    flex: 1,
+    overflow: 'auto',
+    padding: '24px',
+  },
+  comingSoon: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '60vh',
+    color: '#6b7280',
+    gap: '16px',
+  },
+}
 
-const App: React.FC = () => {
+export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [activeNav, setActiveNav] = useState('plugins')
-  const [selectedPlugin, setSelectedPlugin] = useState<Plugin | null>(plugins[0])
+  const [activePage, setActivePage] = useState<NavPage>('plugins')
+  const [activeTab, setActiveTab] = useState<TabType>('recommended')
   const [searchQuery, setSearchQuery] = useState('')
-  const [activeTab, setActiveTab] = useState('featured')
-  const [activeCategory, setActiveCategory] = useState('all')
-  const [installingId, setInstallingId] = useState<string | null>(null)
-  const [installProgress, setInstallProgress] = useState(0)
-  const [installedIds, setInstalledIds] = useState<Set<string>>(new Set(['9']))
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedPlugin, setSelectedPlugin] = useState<Plugin | null>(null)
+  const [installedPlugins, setInstalledPlugins] = useState<Set<string>>(
+    new Set(plugins.filter(p => p.installed).map(p => p.id))
+  )
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null)
+  const [updatingPlugin, setUpdatingPlugin] = useState<string | null>(null)
 
-  const filteredPlugins = plugins.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.author.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = activeCategory === 'all' || p.category === activeCategory
-    const matchesTab = activeTab === 'featured' || (activeTab === 'installed' && installedIds.has(p.id)) || (activeTab === 'updates' && installedIds.has(p.id))
-    return matchesSearch && matchesCategory && matchesTab
-  })
+  // 计算有更新的插件
+  const pluginsWithUpdates = useMemo(() => {
+    return plugins.filter(p => installedPlugins.has(p.id) && hasUpdate(p.version, p.latestVersion))
+  }, [installedPlugins])
 
-  const handleInstall = (plugin: Plugin) => {
-    if (installingId) return
-    setInstallingId(plugin.id)
-    setInstallProgress(0)
+  // 已安装插件
+  const installedPluginList = useMemo(() => {
+    return plugins.filter(p => installedPlugins.has(p.id))
+  }, [installedPlugins])
+
+  // 推荐插件
+  const recommendedPlugins = useMemo(() => {
+    return [...plugins].sort((a, b) => b.rating - a.rating)
+  }, [])
+
+  // 根据标签页获取插件列表
+  const getTabPlugins = (): Plugin[] => {
+    switch (activeTab) {
+      case 'installed':
+        return installedPluginList
+      case 'updates':
+        return pluginsWithUpdates
+      case 'recommended':
+      default:
+        return recommendedPlugins
+    }
   }
 
-  useEffect(() => {
-    if (!installingId) return
-    const interval = setInterval(() => {
-      setInstallProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setInstalledIds(prev => new Set([...prev, installingId]))
-          setInstallingId(null)
-          return 0
-        }
-        return prev + Math.random() * 15 + 5
-      })
-    }, 200)
-    return () => clearInterval(interval)
-  }, [installingId])
+  // 筛选插件
+  const filteredPlugins = useMemo(() => {
+    let result = getTabPlugins()
 
-  const sidebarWidth = sidebarCollapsed ? 64 : 260
+    // 分类筛选
+    if (selectedCategory !== 'all') {
+      result = result.filter(p => p.category === selectedCategory)
+    }
+
+    // 搜索筛选
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(p =>
+        p.name.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        p.author.toLowerCase().includes(query) ||
+        p.tags.some(t => t.toLowerCase().includes(query))
+      )
+    }
+
+    return result
+  }, [activeTab, selectedCategory, searchQuery, installedPlugins])
+
+  // 安装/卸载插件
+  const toggleInstall = (pluginId: string) => {
+    setInstalledPlugins(prev => {
+      const next = new Set(prev)
+      if (next.has(pluginId)) {
+        next.delete(pluginId)
+      } else {
+        next.add(pluginId)
+      }
+      return next
+    })
+  }
+
+  // 更新插件
+  const handleUpdate = (pluginId: string) => {
+    setUpdatingPlugin(pluginId)
+    // 模拟更新操作
+    setTimeout(() => {
+      setUpdatingPlugin(null)
+      // 更新 version 为 latestVersion（在真实场景中这里会调用 API）
+      const plugin = plugins.find(p => p.id === pluginId)
+      if (plugin) {
+        plugin.version = plugin.latestVersion
+      }
+    }, 1500)
+  }
+
+  // 获取当前选中插件是否有更新
+  const selectedPluginHasUpdate = selectedPlugin && installedPlugins.has(selectedPlugin.id) && hasUpdate(selectedPlugin.version, selectedPlugin.latestVersion)
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif', background: '#0a0a14', color: '#e8e8f0', overflow: 'hidden' }}>
-      <style>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .nav-item:hover { background: rgba(102, 126, 234, 0.12) !important; }
-        .nav-item.active { background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.15)) !important; }
-        .plugin-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15) !important; border-color: rgba(102, 126, 234, 0.4) !important; }
-        .plugin-card.selected { border-color: #667eea !important; box-shadow: 0 0 0 1px #667eea, 0 8px 25px rgba(102, 126, 234, 0.2) !important; }
-        .cat-btn:hover { background: rgba(102, 126, 234, 0.15) !important; }
-        .tab-btn:hover { opacity: 0.9; }
-        .install-btn:hover:not(:disabled) { transform: scale(1.03); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important; }
-        .install-btn:active:not(:disabled) { transform: scale(0.98); }
-        .scroll-area::-webkit-scrollbar { width: 6px; }
-        .scroll-area::-webkit-scrollbar-track { background: transparent; }
-        .scroll-area::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 3px; }
-        .scroll-area::-webkit-scrollbar-thumb:hover { background: #3a3a5a; }
-        .spin-anim { animation: spin 1s linear infinite; }
-      `}</style>
-
-      {/* Sidebar */}
-      <div style={{
-        width: `${sidebarWidth}px`, background: 'linear-gradient(180deg, #12121f 0%, #0e0e1a 100%)',
-        borderRight: '1px solid #1e1e35', display: 'flex', flexDirection: 'column',
-        transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)', overflow: 'hidden', flexShrink: 0
-      }}>
-        <div style={{ padding: '16px', borderBottom: '1px solid #1e1e35', display: 'flex', alignItems: 'center', gap: '12px', minHeight: 60 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
-          }}>
-            <Package size={18} color="#fff" strokeWidth={2.5} />
+    <div style={styles.app}>
+      {/* 侧边栏 */}
+      <aside style={{ ...styles.sidebar, ...(sidebarCollapsed ? styles.sidebarCollapsed : {}) }}>
+        <div style={styles.sidebarHeader}>
+          <div style={styles.logo}>
+            <Puzzle size={18} color="#fff" />
           </div>
-          {!sidebarCollapsed && <span style={{ fontSize: 17, fontWeight: 700, color: '#fff', letterSpacing: '-0.3px' }}>DSH Market</span>}
+          {!sidebarCollapsed && <span style={styles.sidebarTitle}>DSH Marketplace</span>}
         </div>
 
-        <div style={{ flex: 1, padding: '12px 10px' }}>
-          {navItems.map(item => (
-            <button key={item.id} className={`nav-item ${activeNav === item.id ? 'active' : ''}`}
-              onClick={() => setActiveNav(item.id)}
-              style={{
-                width: '100%', padding: sidebarCollapsed ? '12px 0' : '11px 14px', borderRadius: 10,
-                border: 'none', background: 'transparent', color: activeNav === item.id ? '#a5b4fc' : '#7878a0',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, fontWeight: 500,
-                justifyContent: sidebarCollapsed ? 'center' : 'flex-start', transition: 'all 0.15s', marginBottom: 3
-              }}>
-              {item.icon}
-              {!sidebarCollapsed && <span>{item.label}</span>}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ padding: '12px 10px', borderTop: '1px solid #1e1e35' }}>
-          <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+        <nav style={styles.nav}>
+          <button
             style={{
-              width: '100%', padding: sidebarCollapsed ? '12px 0' : '11px 14px', borderRadius: 10,
-              border: 'none', background: 'transparent', color: '#555570', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 12, fontSize: 13,
-              justifyContent: sidebarCollapsed ? 'center' : 'flex-start', transition: 'all 0.15s'
-            }}>
-            {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-            {!sidebarCollapsed && <span>Collapse</span>}
+              ...styles.navItem,
+              ...(activePage === 'home' ? styles.navItemActive : {}),
+            }}
+            onClick={() => setActivePage('home')}
+          >
+            <Home size={18} />
+            {!sidebarCollapsed && <span>首页</span>}
+          </button>
+          <button
+            style={{
+              ...styles.navItem,
+              ...(activePage === 'chat' ? styles.navItemActive : {}),
+            }}
+            onClick={() => setActivePage('chat')}
+          >
+            <MessageCircle size={18} />
+            {!sidebarCollapsed && <span>对话</span>}
+          </button>
+          <button
+            style={{
+              ...styles.navItem,
+              ...(activePage === 'plugins' ? styles.navItemActive : {}),
+            }}
+            onClick={() => setActivePage('plugins')}
+          >
+            <Puzzle size={18} />
+            {!sidebarCollapsed && <span>插件市场</span>}
+            {!sidebarCollapsed && pluginsWithUpdates.length > 0 && (
+              <span style={styles.navBadge}>{pluginsWithUpdates.length}</span>
+            )}
+          </button>
+          <button
+            style={{
+              ...styles.navItem,
+              ...(activePage === 'settings' ? styles.navItemActive : {}),
+            }}
+            onClick={() => setActivePage('settings')}
+          >
+            <Settings size={18} />
+            {!sidebarCollapsed && <span>设置</span>}
+          </button>
+        </nav>
+
+        <div style={styles.sidebarFooter}>
+          <button
+            style={styles.collapseBtn}
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            {!sidebarCollapsed && <span style={{ marginLeft: '8px' }}>收起</span>}
           </button>
         </div>
-      </div>
+      </aside>
 
-      {/* Main Content */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {/* Plugin List */}
-        <div style={{ width: '380px', borderRight: '1px solid #1e1e35', display: 'flex', flexDirection: 'column', background: '#0d0d1a', flexShrink: 0 }}>
-          <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid #1e1e35' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <h2 style={{ margin: 0, fontSize: 20, color: '#fff', fontWeight: 700, letterSpacing: '-0.3px' }}>Marketplace</h2>
-              <span style={{ fontSize: 12, color: '#7878a0', background: '#1a1a2e', padding: '5px 10px', borderRadius: 20, fontWeight: 500 }}>
-                {filteredPlugins.length} plugins
-              </span>
-            </div>
-            <div style={{ position: 'relative' }}>
-              <input type="text" placeholder="Search plugins..." value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: '100%', padding: '10px 14px 10px 38px', borderRadius: 10,
-                  border: '1px solid #2a2a45', background: '#14142a', color: '#e8e8f0',
-                  fontSize: 14, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s'
-                }}
-                onFocus={e => e.target.style.borderColor = '#667eea'}
-                onBlur={e => e.target.style.borderColor = '#2a2a45'}
-              />
-              <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.5, color: '#7878a0' }} />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: 6, padding: '12px 20px', borderBottom: '1px solid #1e1e35' }}>
-            {[
-              { id: 'featured', label: 'Featured', icon: <Star size={13} /> },
-              { id: 'installed', label: 'Installed', icon: <Check size={13} /> },
-              { id: 'updates', label: 'Updates', icon: <TrendingUp size={13} /> }
-            ].map(tab => (
-              <button key={tab.id} className="tab-btn"
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  padding: '7px 16px', borderRadius: 8, border: 'none', display: 'flex', alignItems: 'center', gap: 6,
-                  background: activeTab === tab.id ? 'linear-gradient(135deg, #667eea, #764ba2)' : 'transparent',
-                  color: activeTab === tab.id ? '#fff' : '#7878a0', cursor: 'pointer',
-                  fontSize: 13, fontWeight: 600, transition: 'all 0.2s'
-                }}>
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <div style={{ display: 'flex', gap: 6, padding: '10px 20px', borderBottom: '1px solid #1e1e35', flexWrap: 'wrap' }}>
-            {categories.map(cat => (
-              <button key={cat.id} className="cat-btn"
-                onClick={() => setActiveCategory(cat.id)}
-                style={{
-                  padding: '5px 12px', borderRadius: 20, border: 'none', display: 'flex', alignItems: 'center', gap: 5,
-                  background: activeCategory === cat.id ? 'rgba(102, 126, 234, 0.2)' : '#1a1a2e',
-                  color: activeCategory === cat.id ? '#a5b4fc' : '#7878a0',
-                  cursor: 'pointer', fontSize: 12, fontWeight: 500, transition: 'all 0.15s'
-                }}>
-                {cat.icon}
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="scroll-area" style={{ flex: 1, overflow: 'auto', padding: '14px 16px' }}>
-            {filteredPlugins.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#555570', padding: 60 }}>
-                <Search size={32} style={{ marginBottom: 12, opacity: 0.5 }} />
-                <div style={{ fontSize: 15 }}>No plugins found</div>
+      {/* 主内容区 */}
+      <main style={styles.main}>
+        {activePage === 'plugins' ? (
+          <>
+            {/* 头部 */}
+            <header style={styles.header}>
+              <div style={styles.headerLeft}>
+                <div>
+                  <h1 style={styles.headerTitle}>插件市场</h1>
+                  <p style={styles.headerSubtitle}>发现、安装和管理 DeepSeek Harness 插件</p>
+                </div>
               </div>
-            ) : (
-              filteredPlugins.map((plugin, idx) => (
-                <PluginCard key={plugin.id} plugin={plugin}
-                  selected={selectedPlugin?.id === plugin.id}
-                  installing={installingId === plugin.id}
-                  progress={installingId === plugin.id ? Math.min(Math.round(installProgress), 100) : 0}
-                  isInstalled={installedIds.has(plugin.id)}
-                  onClick={() => setSelectedPlugin(plugin)}
-                  onInstall={() => handleInstall(plugin)}
-                  index={idx}
-                />
-              ))
-            )}
-          </div>
-        </div>
+              <div style={styles.headerRight}>
+                <div style={styles.searchBox}>
+                  <Search size={16} color="#6b7280" />
+                  <input
+                    style={styles.searchInput}
+                    placeholder="搜索插件名称、描述、作者..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+            </header>
 
-        {/* Detail Panel */}
-        <div className="scroll-area" style={{ flex: 1, overflow: 'auto', background: '#0a0a14' }}>
-          {selectedPlugin ? (
-            <PluginDetail plugin={selectedPlugin}
-              installing={installingId === selectedPlugin.id}
-              progress={installingId === selectedPlugin.id ? Math.min(Math.round(installProgress), 100) : 0}
-              isInstalled={installedIds.has(selectedPlugin.id)}
-              onInstall={() => handleInstall(selectedPlugin)}
-            />
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#555570', flexDirection: 'column', gap: 12 }}>
-              <Puzzle size={48} style={{ opacity: 0.5 }} />
-              <div style={{ fontSize: 16 }}>Select a plugin to view details</div>
+            {/* 标签页 */}
+            <div style={styles.tabs}>
+              <button
+                style={{
+                  ...styles.tab,
+                  ...(activeTab === 'recommended' ? styles.tabActive : {}),
+                }}
+                onClick={() => setActiveTab('recommended')}
+              >
+                <Sparkles size={14} />
+                推荐
+              </button>
+              <button
+                style={{
+                  ...styles.tab,
+                  ...(activeTab === 'installed' ? styles.tabActive : {}),
+                }}
+                onClick={() => setActiveTab('installed')}
+              >
+                <Check size={14} />
+                已安装
+                <span style={{ ...styles.tabBadge, ...(installedPluginList.length === 0 ? styles.tabBadgeGray : {}) }}>
+                  {installedPluginList.length}
+                </span>
+              </button>
+              <button
+                style={{
+                  ...styles.tab,
+                  ...(activeTab === 'updates' ? styles.tabActive : {}),
+                }}
+                onClick={() => setActiveTab('updates')}
+              >
+                <ArrowUpCircle size={14} />
+                更新
+                {pluginsWithUpdates.length > 0 ? (
+                  <span style={styles.tabBadge}>{pluginsWithUpdates.length}</span>
+                ) : (
+                  <span style={{ ...styles.tabBadge, ...styles.tabBadgeGray }}>0</span>
+                )}
+              </button>
             </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
 
-const PluginCard: React.FC<{ plugin: Plugin; selected: boolean; installing: boolean; progress: number; isInstalled: boolean; onClick: () => void; onInstall: () => void; index: number }> = ({
-  plugin, selected, installing, progress, isInstalled, onClick, onInstall, index
-}) => {
-  const iconColors = ['#667eea', '#f093fb', '#4facfa', '#43e97b', '#fa709a', '#ffa726', '#26c6da', '#ab47bc']
-  const color = iconColors[index % iconColors.length]
+            {/* 内容区 */}
+            <div style={styles.content}>
+              {/* 插件列表 */}
+              <div style={styles.pluginList}>
+                {/* 分类筛选 */}
+                <div style={styles.categoryBar}>
+                  {categories.map(cat => (
+                    <button
+                      key={cat.id}
+                      style={{
+                        ...styles.categoryChip,
+                        ...(selectedCategory === cat.id ? styles.categoryChipActive : {}),
+                      }}
+                      onClick={() => setSelectedCategory(cat.id)}
+                    >
+                      {cat.icon}
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
 
-  return (
-    <div className={`plugin-card ${selected ? 'selected' : ''}`}
-      onClick={onClick}
-      style={{
-        padding: 16, borderRadius: 14, background: selected ? '#16162d' : '#111122',
-        border: selected ? '1px solid #667eea' : '1px solid #1e1e35',
-        marginBottom: 10, cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        animation: `fadeIn 0.3s ease ${index * 0.03}s both`
-      }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-        <div style={{
-          width: 48, height: 48, borderRadius: 12, flexShrink: 0,
-          background: `${color}18`, border: `1px solid ${color}30`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', color: color
-        }}>{plugin.icon}</div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 600, fontSize: 14, color: '#fff', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{plugin.name}</span>
-            {isInstalled && (
-              <span style={{ fontSize: 10, color: '#43e97b', background: 'rgba(67, 233, 123, 0.12)', padding: '2px 8px', borderRadius: 10, flexShrink: 0, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
-                <Check size={10} /> Installed
-              </span>
-            )}
-          </div>
-          <div style={{ fontSize: 12, color: '#7878a0', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', marginBottom: 8 }}>
-            {plugin.description}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11, color: '#555570' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Star size={11} /> {plugin.stars}</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Download size={11} /> {plugin.downloads}</span>
-            <span style={{ marginLeft: 'auto', color: '#667eea', fontWeight: 500 }}>v{plugin.version}</span>
-          </div>
-        </div>
-      </div>
+                {/* 插件网格 */}
+                {filteredPlugins.length > 0 ? (
+                  <div style={styles.pluginGrid}>
+                    {filteredPlugins.map(plugin => {
+                      const isInstalled = installedPlugins.has(plugin.id)
+                      const pluginHasUpdate = isInstalled && hasUpdate(plugin.version, plugin.latestVersion)
+                      const isSelected = selectedPlugin?.id === plugin.id
+                      const isHovered = hoveredCard === plugin.id
+                      const isUpdating = updatingPlugin === plugin.id
 
-      {installing && (
-        <div style={{ marginTop: 12 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 11, color: '#a5b4fc' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Loader2 size={12} className="spin-anim" /> Installing...</span>
-            <span>{Math.min(Math.round(progress), 100)}%</span>
-          </div>
-          <div style={{ height: 4, background: '#1e1e35', borderRadius: 2, overflow: 'hidden' }}>
-            <div style={{
-              height: '100%', width: `${Math.min(progress, 100)}%`,
-              background: 'linear-gradient(90deg, #667eea, #764ba2)',
-              borderRadius: 2, transition: 'width 0.2s ease',
-              boxShadow: '0 0 8px rgba(102, 126, 234, 0.5)'
-            }} />
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+                      return (
+                        <div
+                          key={plugin.id}
+                          style={{
+                            ...styles.pluginCard,
+                            ...(isHovered ? styles.pluginCardHover : {}),
+                            ...(isSelected ? styles.pluginCardSelected : {}),
+                          }}
+                          onClick={() => setSelectedPlugin(plugin)}
+                          onMouseEnter={() => setHoveredCard(plugin.id)}
+                          onMouseLeave={() => setHoveredCard(null)}
+                          className="fade-in"
+                        >
+                          {/* 更新指示器 */}
+                          {pluginHasUpdate && (
+                            <div style={styles.updateIndicator}>
+                              <ArrowUpCircle size={10} />
+                              新版本
+                            </div>
+                          )}
 
-const PluginDetail: React.FC<{ plugin: Plugin; installing: boolean; progress: number; isInstalled: boolean; onInstall: () => void }> = ({
-  plugin, installing, progress, isInstalled, onInstall
-}) => {
-  const iconColors = ['#667eea', '#f093fb', '#4facfa', '#43e97b', '#fa709a', '#ffa726', '#26c6da', '#ab47bc']
-  const color = iconColors[parseInt(plugin.id) % iconColors.length]
+                          {/* 头部 */}
+                          <div style={styles.pluginHeader}>
+                            <div style={styles.pluginIcon}>
+                              {plugin.icon}
+                            </div>
+                            <div style={styles.pluginInfo}>
+                              <div style={styles.pluginName} title={plugin.name}>{plugin.name}</div>
+                              <div style={styles.pluginAuthor}>by {plugin.author}</div>
+                            </div>
+                          </div>
 
-  return (
-    <div style={{ maxWidth: 680, margin: '0 auto', padding: '36px 40px', animation: 'fadeIn 0.3s ease' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24, marginBottom: 32 }}>
-        <div style={{
-          width: 88, height: 88, borderRadius: 20, color: '#fff',
-          background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: `0 8px 30px ${color}40`
-        }}>{React.cloneElement(plugin.icon as React.ReactElement, { size: 36 })}</div>
-        <div style={{ flex: 1 }}>
-          <h1 style={{ margin: '0 0 8px', fontSize: 28, color: '#fff', fontWeight: 700, letterSpacing: '-0.5px' }}>{plugin.name}</h1>
-          <div style={{ display: 'flex', gap: 16, fontSize: 13, color: '#7878a0', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><User size={13} /> <strong style={{ color: '#a5b4fc' }}>{plugin.author}</strong></span>
-            <span>?</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Tag size={13} /> v{plugin.version}</span>
-            <span>?</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Download size={13} /> {plugin.downloads}</span>
-            <span>?</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Star size={13} /> {plugin.stars}</span>
-          </div>
-        </div>
-      </div>
+                          {/* 描述 */}
+                          <div style={styles.pluginDescription}>{plugin.description}</div>
 
-      {installing ? (
-        <div style={{ marginBottom: 32, padding: '20px 24px', background: '#14142a', borderRadius: 14, border: '1px solid #2a2a45' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14, fontWeight: 600, color: '#a5b4fc' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Loader2 size={16} className="spin-anim" /> Installing {plugin.name}...</span>
-            <span>{Math.min(Math.round(progress), 100)}%</span>
-          </div>
-          <div style={{ height: 8, background: '#1e1e35', borderRadius: 4, overflow: 'hidden', marginBottom: 10 }}>
-            <div style={{
-              height: '100%', width: `${Math.min(progress, 100)}%`,
-              background: 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)',
-              backgroundSize: '200% 100%', borderRadius: 4, transition: 'width 0.25s ease',
-              animation: 'shimmer 1.5s infinite linear',
-              boxShadow: '0 0 12px rgba(102, 126, 234, 0.5)'
-            }} />
-          </div>
-          <div style={{ fontSize: 12, color: '#555570', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Clock size={12} />
-            {progress < 30 ? 'Resolving dependencies...' : progress < 60 ? 'Downloading package...' : progress < 90 ? 'Extracting files...' : 'Finalizing installation...'}
-          </div>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', gap: 12, marginBottom: 32 }}>
-          <button className="install-btn"
-            onClick={onInstall}
-            style={{
-              padding: '12px 32px', borderRadius: 10, border: 'none', display: 'flex', alignItems: 'center', gap: 8,
-              background: isInstalled ? '#1e1e35' : 'linear-gradient(135deg, #667eea, #764ba2)',
-              color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700,
-              transition: 'all 0.2s', boxShadow: isInstalled ? 'none' : '0 4px 15px rgba(102, 126, 234, 0.3)'
-            }}>
-            {isInstalled ? <><Check size={16} /> Reinstall</> : <><Download size={16} /> Install Plugin</>}
-          </button>
-          <button style={{
-            padding: '12px 24px', borderRadius: 10, border: '1px solid #2a2a45',
-            background: 'transparent', color: '#a5b4fc', cursor: 'pointer', fontSize: 14, fontWeight: 500,
-            display: 'flex', alignItems: 'center', gap: 6
-          }}>
-            <Folder size={16} /> View Source
-          </button>
-          <button style={{
-            padding: '12px 24px', borderRadius: 10, border: '1px solid #2a2a45',
-            background: 'transparent', color: '#a5b4fc', cursor: 'pointer', fontSize: 14, fontWeight: 500,
-            display: 'flex', alignItems: 'center', gap: 6
-          }}>
-            <Flag size={16} /> Report
-          </button>
-        </div>
-      )}
+                          {/* 版本信息 */}
+                          <div style={styles.versionRow}>
+                            {pluginHasUpdate ? (
+                              <>
+                                <span style={styles.versionCurrent}>v{plugin.version}</span>
+                                <span style={styles.versionArrow}>→</span>
+                                <span style={styles.versionLatest}>v{plugin.latestVersion}</span>
+                              </>
+                            ) : isInstalled ? (
+                              <span style={styles.versionUpToDate}>
+                                <Check size={12} />
+                                v{plugin.version} 最新
+                              </span>
+                            ) : (
+                              <span style={styles.versionCurrent}>v{plugin.latestVersion}</span>
+                            )}
+                          </div>
 
-      <div style={{ marginBottom: 32 }}>
-        <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>About</h3>
-        <p style={{ margin: 0, color: '#9898b0', lineHeight: 1.8, fontSize: 14 }}>{plugin.description}</p>
-      </div>
+                          {/* 底部 */}
+                          <div style={styles.pluginFooter}>
+                            <div style={styles.pluginStats}>
+                              <span style={styles.statItem}>
+                                <Download size={12} />
+                                {plugin.downloads}
+                              </span>
+                              <span style={styles.starRating}>
+                                <Star size={12} fill="currentColor" />
+                                {plugin.rating}
+                              </span>
+                            </div>
+                            <div style={styles.pluginActions}>
+                              {isUpdating ? (
+                                <button style={styles.btnUpdate} disabled>
+                                  <Loader2 size={12} className="spin" />
+                                  更新中
+                                </button>
+                              ) : pluginHasUpdate ? (
+                                <button
+                                  style={styles.btnUpdate}
+                                  onClick={(e) => { e.stopPropagation(); handleUpdate(plugin.id) }}
+                                >
+                                  <ArrowUpCircle size={12} />
+                                  更新
+                                </button>
+                              ) : isInstalled ? (
+                                <button style={styles.btnInstalled}>
+                                  <Check size={12} />
+                                  已安装
+                                </button>
+                              ) : (
+                                <button
+                                  style={styles.btnInstall}
+                                  onClick={(e) => { e.stopPropagation(); toggleInstall(plugin.id) }}
+                                >
+                                  <Download size={12} />
+                                  安装
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div style={styles.emptyState}>
+                    <Package size={48} style={styles.emptyIcon} />
+                    <span style={styles.emptyText}>
+                      {activeTab === 'updates' ? '暂无可用更新' :
+                       activeTab === 'installed' ? '尚未安装任何插件' :
+                        searchQuery ? '未找到匹配的插件' : '暂无插件'}
+                    </span>
+                    <span style={styles.emptySubtext}>
+                      {activeTab === 'updates' ? '所有插件均为最新版本' :
+                       activeTab === 'installed' ? '去插件市场发现有用的工具' :
+                       searchQuery ? '尝试使用不同的关键词搜索' : '敬请期待'}
+                    </span>
+                  </div>
+                )}
+              </div>
 
-      <div style={{ marginBottom: 32 }}>
-        <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>Tags</h3>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {plugin.tags.map(tag => (
-            <span key={tag} style={{
-              padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500,
-              background: 'rgba(102, 126, 234, 0.1)', color: '#a5b4fc', border: '1px solid rgba(102, 126, 234, 0.2)',
-              display: 'flex', alignItems: 'center', gap: 5
-            }}>
-              <Hash size={11} /> {tag}
-            </span>
-          ))}
-        </div>
-      </div>
+              {/* 详情面板 */}
+              {selectedPlugin && (
+                <div style={styles.detailPanel} className="fade-in">
+                  <div style={styles.detailHeader}>
+                    <div style={styles.detailIcon}>
+                      {selectedPlugin.icon}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={styles.detailTitle}>{selectedPlugin.name}</div>
+                      <div style={styles.detailAuthor}>by {selectedPlugin.author}</div>
+                      <div style={styles.detailRating}>
+                        <Star size={14} fill="currentColor" />
+                        <span>{selectedPlugin.rating}</span>
+                        <span style={{ color: '#6b7280', marginLeft: '4px' }}>({selectedPlugin.stars} stars)</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setSelectedPlugin(null)}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#6b7280',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
 
-      <div style={{ marginBottom: 32 }}>
-        <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>Statistics</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-          <StatCard label="Rating" value={`${plugin.rating} / 5.0`} icon={<Star size={14} />} />
-          <StatCard label="Downloads" value={plugin.downloads} icon={<Download size={14} />} />
-          <StatCard label="Monthly" value={plugin.monthlyDownloads} icon={<Calendar size={14} />} />
-          <StatCard label="Version" value={plugin.version} icon={<Tag size={14} />} />
-        </div>
-      </div>
+                  <div style={styles.detailBody}>
+                    {/* 描述 */}
+                    <div style={styles.detailSection}>
+                      <div style={styles.detailSectionTitle}>简介</div>
+                      <div style={styles.detailDescription}>{selectedPlugin.description}</div>
+                    </div>
 
-      <div>
-        <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>Reviews</h3>
-        {[
-          { user: 'Alex C.', comment: 'Excellent plugin! Greatly improved my workflow.', rating: 5 },
-          { user: 'Sarah L.', comment: 'Works well, but could use some performance improvements.', rating: 4 },
-        ].map((review, i) => (
-          <div key={i} style={{ padding: 16, background: '#111122', borderRadius: 12, marginBottom: 10, border: '1px solid #1e1e35' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontWeight: 600, fontSize: 13, color: '#fff', display: 'flex', alignItems: 'center', gap: 6 }}><User size={13} /> {review.user}</span>
-              <span style={{ fontSize: 13, color: '#ffa726', display: 'flex', gap: 2 }}>
-                {Array.from({ length: review.rating }).map((_, j) => <Star key={j} size={12} fill="#ffa726" />)}
-              </span>
+                    {/* 版本信息 */}
+                    <div style={styles.detailSection}>
+                      <div style={styles.detailSectionTitle}>版本信息</div>
+                      <div style={styles.versionRow}>
+                        <span style={styles.versionCurrent}>当前: v{selectedPlugin.version}</span>
+                        {selectedPluginHasUpdate && (
+                          <>
+                            <span style={styles.versionArrow}>→</span>
+                            <span style={styles.versionLatest}>最新: v{selectedPlugin.latestVersion}</span>
+                          </>
+                        )}
+                      </div>
+                      {!selectedPluginHasUpdate && installedPlugins.has(selectedPlugin.id) && (
+                        <div style={{ ...styles.versionUpToDate, marginTop: '6px', display: 'inline-flex' }}>
+                          <Check size={12} />
+                          已是最新版本
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 更新日志 */}
+                    {selectedPlugin.changelog && selectedPluginHasUpdate && (
+                      <div style={styles.detailSection}>
+                        <div style={styles.detailSectionTitle}>更新日志</div>
+                        <div style={styles.detailChangelog}>{selectedPlugin.changelog}</div>
+                      </div>
+                    )}
+
+                    {/* 统计 */}
+                    <div style={styles.detailSection}>
+                      <div style={styles.detailSectionTitle}>统计</div>
+                      <div style={styles.detailStats}>
+                        <div style={styles.detailStatCard}>
+                          <div style={styles.detailStatValue}>{selectedPlugin.downloads}</div>
+                          <div style={styles.detailStatLabel}>总下载量</div>
+                        </div>
+                        <div style={styles.detailStatCard}>
+                          <div style={styles.detailStatValue}>{selectedPlugin.monthlyDownloads}</div>
+                          <div style={styles.detailStatLabel}>月下载量</div>
+                        </div>
+                        <div style={styles.detailStatCard}>
+                          <div style={styles.detailStatValue}>{selectedPlugin.stars}</div>
+                          <div style={styles.detailStatLabel}>收藏数</div>
+                        </div>
+                        <div style={styles.detailStatCard}>
+                          <div style={styles.detailStatValue}>{selectedPlugin.rating}</div>
+                          <div style={styles.detailStatLabel}>评分</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 标签 */}
+                    <div style={styles.detailSection}>
+                      <div style={styles.detailSectionTitle}>标签</div>
+                      <div style={styles.detailTags}>
+                        {selectedPlugin.tags.map(tag => (
+                          <span key={tag} style={styles.detailTag}>#{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 底部操作 */}
+                  <div style={styles.detailFooter}>
+                    {selectedPluginHasUpdate ? (
+                      <button
+                        style={styles.detailBtnUpdate}
+                        onClick={() => handleUpdate(selectedPlugin.id)}
+                        disabled={updatingPlugin === selectedPlugin.id}
+                      >
+                        {updatingPlugin === selectedPlugin.id ? (
+                          <>
+                            <Loader2 size={16} className="spin" />
+                            更新中...
+                          </>
+                        ) : (
+                          <>
+                            <ArrowUpCircle size={16} />
+                            更新到 v{selectedPlugin.latestVersion}
+                          </>
+                        )}
+                      </button>
+                    ) : installedPlugins.has(selectedPlugin.id) ? (
+                      <>
+                        <button style={styles.detailBtnSecondary} disabled>
+                          <Check size={16} />
+                          已安装
+                        </button>
+                        <button
+                          style={styles.detailBtnDanger}
+                          onClick={() => toggleInstall(selectedPlugin.id)}
+                        >
+                          <X size={16} />
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        style={styles.detailBtnPrimary}
+                        onClick={() => toggleInstall(selectedPlugin.id)}
+                      >
+                        <Download size={16} />
+                        安装插件
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-            <p style={{ margin: 0, fontSize: 13, color: '#9898b0', lineHeight: 1.6 }}>{review.comment}</p>
+          </>
+        ) : activePage === 'home' ? (
+          <div style={styles.pageContainer}>
+            <header style={styles.header}>
+              <div style={styles.headerLeft}>
+                <div>
+                  <h1 style={styles.headerTitle}>首页</h1>
+                  <p style={styles.headerSubtitle}>欢迎使用 DSH Marketplace</p>
+                </div>
+              </div>
+            </header>
+            <div style={styles.pageContent}>
+              <div style={styles.comingSoon}>
+                <Home size={48} style={styles.emptyIcon} />
+                <span style={styles.emptyText}>首页功能开发中</span>
+                <span style={styles.emptySubtext}>即将推出更多功能</span>
+              </div>
+            </div>
           </div>
-        ))}
-      </div>
+        ) : activePage === 'chat' ? (
+          <div style={styles.pageContainer}>
+            <header style={styles.header}>
+              <div style={styles.headerLeft}>
+                <div>
+                  <h1 style={styles.headerTitle}>对话</h1>
+                  <p style={styles.headerSubtitle}>与 AI 助手交流</p>
+                </div>
+              </div>
+            </header>
+            <div style={styles.pageContent}>
+              <div style={styles.comingSoon}>
+                <MessageCircle size={48} style={styles.emptyIcon} />
+                <span style={styles.emptyText}>对话功能开发中</span>
+                <span style={styles.emptySubtext}>即将推出更多功能</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div style={styles.pageContainer}>
+            <header style={styles.header}>
+              <div style={styles.headerLeft}>
+                <div>
+                  <h1 style={styles.headerTitle}>设置</h1>
+                  <p style={styles.headerSubtitle}>配置 Marketplace 选项</p>
+                </div>
+              </div>
+            </header>
+            <div style={styles.pageContent}>
+              <div style={styles.comingSoon}>
+                <Settings size={48} style={styles.emptyIcon} />
+                <span style={styles.emptyText}>设置功能开发中</span>
+                <span style={styles.emptySubtext}>即将推出更多功能</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   )
 }
-
-const StatCard: React.FC<{ label: string; value: string; icon: React.ReactNode }> = ({ label, value, icon }) => (
-  <div style={{ padding: 16, background: '#111122', borderRadius: 12, border: '1px solid #1e1e35' }}>
-    <div style={{ fontSize: 12, color: '#555570', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>{icon} {label}</div>
-    <div style={{ fontSize: 16, color: '#fff', fontWeight: 700 }}>{value}</div>
-  </div>
-)
-
-export default App
