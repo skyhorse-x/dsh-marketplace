@@ -1,8 +1,8 @@
-# DSH Market
+# DSH Marketplace
 
 > DeepSeek Harness 插件市场 — 发现、安装和管理 DSH 插件
 
-DSH Market 是 DeepSeek Harness 桌面端的插件市场应用，提供插件浏览、搜索、安装和管理功能。采用 React + TypeScript + Vite 构建，界面风格与 DSH 桌面端保持一致。
+DSH Marketplace 是 DeepSeek Harness 桌面端的插件市场应用，提供插件浏览、搜索、安装和管理功能。采用 React + TypeScript + Vite 构建，界面风格与 DSH 桌面端保持一致。
 
 ## 功能特性
 
@@ -54,19 +54,38 @@ dsh-market/
         └── usePlugins.ts   # 插件数据管理 Hook
 ```
 
-## 快速开始
+## 安装方式
 
-### 环境要求
+### 作为 DSH 插件安装（推荐）
+
+使用 `dsh plugin` 命令将插件安装到 DSH 的 web profile 中：
+
+```bash
+# 从 GitHub 安装
+dsh plugin --profile web add github:skyhorse-x/dsh-marketplace
+
+# 从 Git URL 安装
+dsh plugin --profile web add git+https://github.com/skyhorse-x/dsh-marketplace.git
+
+# 从本地路径安装（开发模式）
+dsh plugin --profile web add ./dsh-marketplace
+```
+
+安装后重启 DSH 即可在插件市场中浏览和管理插件。
+
+### 源码安装（开发模式）
+
+#### 环境要求
 
 - Node.js >= 18.0.0
 - pnpm >= 8.0.0
 
-### 安装与运行
+#### 安装与运行
 
 ```bash
 # 克隆仓库
-git clone git@github.com:skyhorse-x/dsh-market.git
-cd dsh-market
+git clone git@github.com:skyhorse-x/dsh-marketplace.git
+cd dsh-marketplace
 
 # 安装依赖
 pnpm install
@@ -195,4 +214,4 @@ type PluginCategory =
 
 ## 许可证
 
-[MIT](LICENSE) © 2025 DSH Market Contributors
+[MIT](LICENSE) © 2025 DSH Marketplace Contributors
