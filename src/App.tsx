@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 interface Plugin {
   id: string
@@ -7,31 +7,42 @@ interface Plugin {
   author: string
   version: string
   downloads: string
-  icon: string
+  monthlyDownloads: string
+  stars: string
   installed: boolean
   rating: number
   category: string
   tags: string[]
+  icon: string
 }
 
 const plugins: Plugin[] = [
-  { id: '1', name: 'Code Assistant', description: 'AI-powered code completion and generation for multiple languages', author: 'DSH Team', version: '1.2.0', downloads: '12.5k', icon: 'üíª', installed: true, rating: 4.8, category: 'development', tags: ['ai', 'code'] },
-  { id: '2', name: 'Knowledge Base', description: 'Manage and search your knowledge base documents with AI', author: 'Community', version: '2.0.1', downloads: '8.3k', icon: 'üìö', installed: false, rating: 4.5, category: 'productivity', tags: ['docs', 'search'] },
-  { id: '3', name: 'Data Analyzer', description: 'Powerful data visualization and analysis toolkit', author: 'DataTeam', version: '1.0.5', downloads: '15.2k', icon: 'üìä', installed: false, rating: 4.7, category: 'data', tags: ['charts', 'analytics'] },
-  { id: '4', name: 'API Tester', description: 'Convenient API debugging and testing interface', author: 'DevTools', version: '1.1.0', downloads: '6.7k', icon: 'üîß', installed: true, rating: 4.3, category: 'development', tags: ['api', 'testing'] },
-  { id: '5', name: 'Doc Generator', description: 'Auto-generate project documentation and comments', author: 'DocGen', version: '1.0.0', downloads: '4.1k', icon: 'üìù', installed: false, rating: 4.2, category: 'productivity', tags: ['docs', 'auto'] },
-  { id: '6', name: 'Theme Engine', description: 'Custom themes and appearance controls for DSH', author: 'UI Team', version: '1.3.0', downloads: '20.1k', icon: 'üé®', installed: false, rating: 4.9, category: 'theme', tags: ['ui', 'customization'] },
-  { id: '7', name: 'Git Integration', description: 'Seamless Git workflow with visual diff and commit tools', author: 'DevTools', version: '2.1.0', downloads: '18.4k', icon: 'üîÄ', installed: true, rating: 4.6, category: 'development', tags: ['git', 'vcs'] },
-  { id: '8', name: 'Note Taking', description: 'Rich note-taking with markdown and AI summarization', author: 'Productivity', version: '1.0.2', downloads: '9.8k', icon: 'üìí', installed: false, rating: 4.4, category: 'productivity', tags: ['notes', 'markdown'] },
+  { id: '1', name: 'dsh-vision-router', description: 'Eyes for text-only DeepSeek Harness agents: built-in free vision chain (no key) + pixel-level vision tools (Q&A, grounding, crop, pixel diff, colors, OCR, SVG trace, cutout, screenshots).', author: 'Community', version: '1.7.3', downloads: '26.4k', monthlyDownloads: '914', stars: '26.4k', installed: false, rating: 4.9, category: 'ai', tags: ['vision', 'ocr', 'image'], icon: '???' },
+  { id: '2', name: 'dsh-context', description: 'A DeepSeek Harness plugin for context insight and management, with context dashboard and context command, for understanding how the context is made of, and how it evolves.', author: 'Community', version: '0.19.2', downloads: '9.9k', monthlyDownloads: '626', stars: '9.9k', installed: false, rating: 4.7, category: 'productivity', tags: ['context', 'dashboard'], icon: '??' },
+  { id: '3', name: '@zseven-w/dsh-openpencil', description: 'OpenPencil plugin for DSH with exact multi-frame previews, an interactive canvas, and managed editor workbenches.', author: 'zseven-w', version: '0.1.0-rc.1', downloads: '132', monthlyDownloads: '132', stars: '132', installed: false, rating: 4.5, category: 'creative', tags: ['canvas', 'editor'], icon: '??' },
+  { id: '4', name: '@sanqi-normal/dsh-webui-market-plugin', description: 'In-harness community plugin market for the dsh web GUI: browse awesome-dsh-plugin.com, install and uninstall plugins into a profile.', author: 'sanqi-normal', version: '0.5.5', downloads: '96', monthlyDownloads: '96', stars: '96', installed: false, rating: 4.3, category: 'utility', tags: ['market', 'browser'], icon: '??' },
+  { id: '5', name: '@mars-sea/dsh-commandcode-provider', description: "Unofficial DeepSeek Harness LLM provider plugin for Command Code, ported from pi-commandcode-provider (MIT). Registers the 'commandcode' provider route.", author: 'mars-sea', version: '0.6.0', downloads: '77', monthlyDownloads: '77', stars: '77', installed: false, rating: 4.4, category: 'ai', tags: ['llm', 'provider'], icon: '??' },
+  { id: '6', name: 'dsh-dream-skin', description: 'DeepSeek Harness ªª∑Ù≤Âº˛ (Dream Skin for DSH): 8 Ã◊ iOS / Linear  Ω«Â¿‰…´µ˜µƒ∏ﬂ÷ ∏–÷˜Ã‚ + ¡˜π‚π‚–ß¥¯ + √ø∆§÷«ƒ‹±≥æ∞ + «øµ˜…´ + ÷˜Ã‚∞¸∑÷œÌ', author: 'Community', version: '0.4.1', downloads: '5.5k', monthlyDownloads: '70', stars: '5.5k', installed: false, rating: 4.8, category: 'theme', tags: ['skin', 'theme', 'ui'], icon: '??' },
+  { id: '7', name: 'dsh-mobile', description: 'DeepSeek Harness “∆∂Ø∂À  ≈‰”Î∞≤»´”ÚÕ¯∑√Œ ≤Âº˛£¨÷ß≥÷ Android App ∫Õ ÷ª˙‰Ø¿¿∆˜°£', author: 'Community', version: '0.1.0-alpha.24', downloads: '5.7k', monthlyDownloads: '67', stars: '5.7k', installed: false, rating: 4.6, category: 'utility', tags: ['mobile', 'android'], icon: '??' },
+  { id: '8', name: 'dsh-web-plugin-manager', description: 'Manage DeepSeek Harness (DSH) plugins from the Web UI: list, enable/disable, install/remove, environments, and a GitHub-awesome-driven marketplace.', author: 'Community', version: '0.4.6', downloads: '62', monthlyDownloads: '62', stars: '62', installed: false, rating: 4.2, category: 'utility', tags: ['manager', 'plugins'], icon: '??' },
+  { id: '9', name: 'dsh-client-auto-continue', description: 'DSH Web UI plugin: automatically sends "ºÃ–¯" (continue) when a request is interrupted by network errors or other non-human causes.', author: 'Community', version: '0.7.5', downloads: '4.7k', monthlyDownloads: '34', stars: '4.7k', installed: true, rating: 4.5, category: 'productivity', tags: ['auto', 'continue'], icon: '??' },
+  { id: '10', name: 'dsh-remote', description: 'Remote-work assistant for DeepSeek Harness: connect SSH (password/key/agent/keyboard-interactive/proxy jump), pick a remote workspace, operate on it with 21 rw_* tools.', author: 'Community', version: '0.8.6', downloads: '30', monthlyDownloads: '30', stars: '30', installed: false, rating: 4.7, category: 'development', tags: ['ssh', 'remote'], icon: '??' },
+  { id: '11', name: 'dsh-passwords', description: 'dsh-passwords: a server-grade gateway that turns DeepSeek Harness into a multi-tenant platform °™ remote access + automatic HTTPS, per-subuser permissions & quotas.', author: 'Community', version: '2.5.4', downloads: '15', monthlyDownloads: '15', stars: '15', installed: false, rating: 4.4, category: 'security', tags: ['auth', 'multi-tenant'], icon: '??' },
+  { id: '12', name: 'dsh-any-background', description: 'Appearance plugin for DeepSeek Harness: custom theme color (PS-style color wheel), background wallpaper with opacity/blur controls.', author: 'Community', version: '0.1.9', downloads: '15', monthlyDownloads: '15', stars: '15', installed: false, rating: 4.3, category: 'theme', tags: ['background', 'wallpaper'], icon: '???' },
+  { id: '13', name: 'dsh-config-manager', description: 'DSH Config Manager °™ backup / export / import / migrate DSH configuration (dual-face Cordis plugin: host engine + web UI).', author: 'Community', version: '0.1.40', downloads: '5.2k', monthlyDownloads: '7', stars: '5.2k', installed: false, rating: 4.6, category: 'utility', tags: ['config', 'backup'], icon: '??' },
+  { id: '14', name: 'upstream-radar', description: 'Always-on dependency security monitoring for DeepSeek Harness (DSH) plugins: find exact installed or candidate transitive vulnerable paths.', author: 'Community', version: '0.38.0', downloads: '10.3k', monthlyDownloads: '6', stars: '10.3k', installed: false, rating: 4.8, category: 'security', tags: ['security', 'monitor'], icon: '??' },
+  { id: '15', name: 'dsh-free-vision', description: 'Free vision plugin for DeepSeek Harness (dsh): image understanding for text-only models with free-tier providers (Qwen3-VL-Flash / DeepSeek-OCR / Doubao).', author: 'Community', version: '1.0.8', downloads: '5.3k', monthlyDownloads: '6', stars: '5.3k', installed: false, rating: 4.7, category: 'ai', tags: ['vision', 'free'], icon: '??' },
 ]
 
 const categories = [
-  { id: 'all', label: 'All', icon: 'üåê' },
-  { id: 'development', label: 'Development', icon: 'üíª' },
-  { id: 'productivity', label: 'Productivity', icon: '‚ö°' },
-  { id: 'data', label: 'Data', icon: 'üìä' },
-  { id: 'theme', label: 'Theme', icon: 'üé®' },
-  { id: 'integration', label: 'Integration', icon: 'üîó' },
+  { id: 'all', label: 'All', icon: '??' },
+  { id: 'ai', label: 'AI & Vision', icon: '??' },
+  { id: 'development', label: 'Development', icon: '??' },
+  { id: 'productivity', label: 'Productivity', icon: '?' },
+  { id: 'theme', label: 'Themes', icon: '??' },
+  { id: 'security', label: 'Security', icon: '??' },
+  { id: 'utility', label: 'Utility', icon: '??' },
+  { id: 'creative', label: 'Creative', icon: '?' },
 ]
 
 const App: React.FC = () => {
@@ -41,208 +52,220 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState('featured')
   const [activeCategory, setActiveCategory] = useState('all')
+  const [installingId, setInstallingId] = useState<string | null>(null)
+  const [installProgress, setInstallProgress] = useState(0)
+  const [installedIds, setInstalledIds] = useState<Set<string>>(new Set(['9']))
 
   const filteredPlugins = plugins.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.author.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = activeCategory === 'all' || p.category === activeCategory
-    const matchesTab = activeTab === 'featured' || (activeTab === 'installed' && p.installed) || (activeTab === 'updates' && p.installed)
+    const matchesTab = activeTab === 'featured' || (activeTab === 'installed' && installedIds.has(p.id)) || (activeTab === 'updates' && installedIds.has(p.id))
     return matchesSearch && matchesCategory && matchesTab
   })
 
-  const sidebarWidth = sidebarCollapsed ? 56 : 280
+  const handleInstall = (plugin: Plugin) => {
+    if (installingId) return
+    setInstallingId(plugin.id)
+    setInstallProgress(0)
+  }
+
+  useEffect(() => {
+    if (!installingId) return
+    const interval = setInterval(() => {
+      setInstallProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval)
+          setInstalledIds(prev => new Set([...prev, installingId]))
+          setInstallingId(null)
+          return 0
+        }
+        return prev + Math.random() * 15 + 5
+      })
+    }, 200)
+    return () => clearInterval(interval)
+  }, [installingId])
+
+  const sidebarWidth = sidebarCollapsed ? 64 : 260
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', background: '#0f0f1a', color: '#e0e0e0' }}>
+    <div style={{ display: 'flex', height: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif', background: '#0a0a14', color: '#e8e8f0', overflow: 'hidden' }}>
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+        .nav-item:hover { background: rgba(102, 126, 234, 0.12) !important; }
+        .nav-item.active { background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.15)) !important; }
+        .plugin-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15) !important; border-color: rgba(102, 126, 234, 0.4) !important; }
+        .plugin-card.selected { border-color: #667eea !important; box-shadow: 0 0 0 1px #667eea, 0 8px 25px rgba(102, 126, 234, 0.2) !important; }
+        .cat-btn:hover { background: rgba(102, 126, 234, 0.15) !important; }
+        .tab-btn:hover { opacity: 0.9; }
+        .install-btn:hover:not(:disabled) { transform: scale(1.03); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important; }
+        .install-btn:active:not(:disabled) { transform: scale(0.98); }
+        .scroll-area::-webkit-scrollbar { width: 6px; }
+        .scroll-area::-webkit-scrollbar-track { background: transparent; }
+        .scroll-area::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 3px; }
+        .scroll-area::-webkit-scrollbar-thumb:hover { background: #3a3a5a; }
+      `}</style>
+
       {/* Sidebar */}
       <div style={{
-        width: `${sidebarWidth}px`,
-        background: '#1a1a2e',
-        borderRight: '1px solid #2a2a3e',
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'width 0.2s ease',
-        overflow: 'hidden'
+        width: `${sidebarWidth}px`, background: 'linear-gradient(180deg, #12121f 0%, #0e0e1a 100%)',
+        borderRight: '1px solid #1e1e35', display: 'flex', flexDirection: 'column',
+        transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)', overflow: 'hidden', flexShrink: 0
       }}>
-        {/* Brand */}
-        <div style={{
-          padding: '12px 16px',
-          borderBottom: '1px solid #2a2a3e',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          minHeight: 56
-        }}>
+        <div style={{ padding: '16px', borderBottom: '1px solid #1e1e35', display: 'flex', alignItems: 'center', gap: '12px', minHeight: 60 }}>
           <div style={{
-            width: 32, height: 32, borderRadius: 8,
+            width: 36, height: 36, borderRadius: 10,
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 14, fontWeight: 700, color: '#fff', flexShrink: 0
+            fontSize: 16, fontWeight: 800, color: '#fff', flexShrink: 0,
+            boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
           }}>D</div>
-          {!sidebarCollapsed && <span style={{ fontSize: 16, fontWeight: 600, color: '#fff' }}>DSH Marketplace</span>}
+          {!sidebarCollapsed && <span style={{ fontSize: 17, fontWeight: 700, color: '#fff', letterSpacing: '-0.3px' }}>DSH Market</span>}
         </div>
 
-        {/* Nav Items */}
-        <div style={{ flex: 1, padding: '8px 12px' }}>
+        <div style={{ flex: 1, padding: '12px 10px' }}>
           {[
-            { id: 'home', label: 'Home', icon: 'üè†' },
-            { id: 'chat', label: 'Chat', icon: 'üí¨' },
-            { id: 'plugins', label: 'Marketplace', icon: 'üß©' },
-            { id: 'workspace', label: 'Workspace', icon: 'üìÅ' },
-            { id: 'settings', label: 'Settings', icon: '‚öôÔ∏è' },
+            { id: 'home', label: 'Home', icon: '??' },
+            { id: 'chat', label: 'Chat', icon: '??' },
+            { id: 'plugins', label: 'Marketplace', icon: '??' },
+            { id: 'workspace', label: 'Workspace', icon: '??' },
+            { id: 'settings', label: 'Settings', icon: '??' },
           ].map(item => (
-            <button
-              key={item.id}
+            <button key={item.id} className={`nav-item ${activeNav === item.id ? 'active' : ''}`}
               onClick={() => setActiveNav(item.id)}
               style={{
-                width: '100%',
-                padding: sidebarCollapsed ? '10px 0' : '10px 12px',
-                borderRadius: 8,
-                border: 'none',
-                background: activeNav === item.id ? '#2a2a4e' : 'transparent',
-                color: activeNav === item.id ? '#fff' : '#888',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                fontSize: 14,
-                justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
-                transition: 'all 0.15s',
-                marginBottom: 2
-              }}
-            >
+                width: '100%', padding: sidebarCollapsed ? '12px 0' : '11px 14px', borderRadius: 10,
+                border: 'none', background: 'transparent', color: activeNav === item.id ? '#a5b4fc' : '#7878a0',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, fontWeight: 500,
+                justifyContent: sidebarCollapsed ? 'center' : 'flex-start', transition: 'all 0.15s', marginBottom: 3
+              }}>
               <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>
               {!sidebarCollapsed && <span>{item.label}</span>}
             </button>
           ))}
         </div>
 
-        {/* Sidebar Footer */}
-        <div style={{ padding: '8px 12px', borderTop: '1px solid #2a2a3e' }}>
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+        <div style={{ padding: '12px 10px', borderTop: '1px solid #1e1e35' }}>
+          <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             style={{
-              width: '100%',
-              padding: sidebarCollapsed ? '10px 0' : '10px 12px',
-              borderRadius: 8,
-              border: 'none',
-              background: 'transparent',
-              color: '#666',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              fontSize: 13,
-              justifyContent: sidebarCollapsed ? 'center' : 'flex-start'
-            }}
-          >
-            <span style={{ fontSize: 16 }}>{sidebarCollapsed ? '‚ñ∂' : '‚óÄ'}</span>
+              width: '100%', padding: sidebarCollapsed ? '12px 0' : '11px 14px', borderRadius: 10,
+              border: 'none', background: 'transparent', color: '#555570', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 12, fontSize: 13,
+              justifyContent: sidebarCollapsed ? 'center' : 'flex-start', transition: 'all 0.15s'
+            }}>
+            <span style={{ fontSize: 16 }}>{sidebarCollapsed ? '?' : '?'}</span>
             {!sidebarCollapsed && <span>Collapse</span>}
           </button>
         </div>
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {/* Plugin List Panel */}
-        <div style={{
-          width: '340px',
-          borderRight: '1px solid #2a2a3e',
-          display: 'flex',
-          flexDirection: 'column',
-          background: '#12121f'
-        }}>
-          {/* Header */}
-          <div style={{ padding: '16px', borderBottom: '1px solid #2a2a3e' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <h2 style={{ margin: 0, fontSize: 18, color: '#fff' }}>Marketplace</h2>
-              <span style={{ fontSize: 12, color: '#666', background: '#1a1a2e', padding: '4px 8px', borderRadius: 12 }}>
+        {/* Plugin List */}
+        <div style={{ width: '380px', borderRight: '1px solid #1e1e35', display: 'flex', flexDirection: 'column', background: '#0d0d1a', flexShrink: 0 }}>
+          <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid #1e1e35' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <h2 style={{ margin: 0, fontSize: 20, color: '#fff', fontWeight: 700, letterSpacing: '-0.3px' }}>Marketplace</h2>
+              <span style={{ fontSize: 12, color: '#7878a0', background: '#1a1a2e', padding: '5px 10px', borderRadius: 20, fontWeight: 500 }}>
                 {filteredPlugins.length} plugins
               </span>
             </div>
-            <input
-              type="text"
-              placeholder="Search plugins..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: '100%', padding: '8px 12px', borderRadius: 8,
-                border: '1px solid #2a2a3e', background: '#1a1a2e',
-                color: '#e0e0e0', fontSize: 14, outline: 'none',
-                boxSizing: 'border-box'
-              }}
-            />
+            <div style={{ position: 'relative' }}>
+              <input type="text" placeholder="Search plugins..." value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%', padding: '10px 14px 10px 38px', borderRadius: 10,
+                  border: '1px solid #2a2a45', background: '#14142a', color: '#e8e8f0',
+                  fontSize: 14, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s'
+                }}
+                onFocus={e => e.target.style.borderColor = '#667eea'}
+                onBlur={e => e.target.style.borderColor = '#2a2a45'}
+              />
+              <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 16, opacity: 0.5 }}>??</span>
+            </div>
           </div>
 
-          {/* Tabs */}
-          <div style={{ display: 'flex', gap: 4, padding: '8px 16px', borderBottom: '1px solid #2a2a3e' }}>
+          <div style={{ display: 'flex', gap: 6, padding: '12px 20px', borderBottom: '1px solid #1e1e35' }}>
             {[
-              { id: 'featured', label: 'Featured' },
-              { id: 'installed', label: 'Installed' },
-              { id: 'updates', label: 'Updates' }
+              { id: 'featured', label: '? Featured' },
+              { id: 'installed', label: '? Installed' },
+              { id: 'updates', label: '°¸ Updates' }
             ].map(tab => (
-              <button
-                key={tab.id}
+              <button key={tab.id} className="tab-btn"
                 onClick={() => setActiveTab(tab.id)}
                 style={{
-                  padding: '6px 14px', borderRadius: 6, border: 'none',
-                  background: activeTab === tab.id ? '#667eea' : 'transparent',
-                  color: activeTab === tab.id ? '#fff' : '#888',
-                  cursor: 'pointer', fontSize: 13, fontWeight: 500
-                }}
-              >
+                  padding: '7px 16px', borderRadius: 8, border: 'none',
+                  background: activeTab === tab.id ? 'linear-gradient(135deg, #667eea, #764ba2)' : 'transparent',
+                  color: activeTab === tab.id ? '#fff' : '#7878a0', cursor: 'pointer',
+                  fontSize: 13, fontWeight: 600, transition: 'all 0.2s'
+                }}>
                 {tab.label}
               </button>
             ))}
           </div>
 
-          {/* Categories */}
-          <div style={{ display: 'flex', gap: 4, padding: '8px 16px', borderBottom: '1px solid #2a2a3e', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 6, padding: '10px 20px', borderBottom: '1px solid #1e1e35', flexWrap: 'wrap' }}>
             {categories.map(cat => (
-              <button
-                key={cat.id}
+              <button key={cat.id} className="cat-btn"
                 onClick={() => setActiveCategory(cat.id)}
                 style={{
-                  padding: '4px 10px', borderRadius: 12, border: 'none',
-                  background: activeCategory === cat.id ? '#2a2a4e' : '#1a1a2e',
-                  color: activeCategory === cat.id ? '#fff' : '#888',
-                  cursor: 'pointer', fontSize: 12
-                }}
-              >
+                  padding: '5px 12px', borderRadius: 20, border: 'none',
+                  background: activeCategory === cat.id ? 'rgba(102, 126, 234, 0.2)' : '#1a1a2e',
+                  color: activeCategory === cat.id ? '#a5b4fc' : '#7878a0',
+                  cursor: 'pointer', fontSize: 12, fontWeight: 500, transition: 'all 0.15s'
+                }}>
                 {cat.icon} {cat.label}
               </button>
             ))}
           </div>
 
-          {/* Plugin List */}
-          <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
+          <div className="scroll-area" style={{ flex: 1, overflow: 'auto', padding: '14px 16px' }}>
             {filteredPlugins.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#666', padding: 40 }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>üîç</div>
-                <div>No plugins found</div>
+              <div style={{ textAlign: 'center', color: '#555570', padding: 60 }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>??</div>
+                <div style={{ fontSize: 15 }}>No plugins found</div>
               </div>
             ) : (
-              filteredPlugins.map(plugin => (
-                <PluginCard
-                  key={plugin.id}
-                  plugin={plugin}
+              filteredPlugins.map((plugin, idx) => (
+                <PluginCard key={plugin.id} plugin={plugin}
                   selected={selectedPlugin?.id === plugin.id}
+                  installing={installingId === plugin.id}
+                  progress={installingId === plugin.id ? Math.min(Math.round(installProgress), 100) : 0}
+                  isInstalled={installedIds.has(plugin.id)}
                   onClick={() => setSelectedPlugin(plugin)}
+                  onInstall={() => handleInstall(plugin)}
+                  index={idx}
                 />
               ))
             )}
           </div>
         </div>
 
-        {/* Plugin Detail Panel */}
-        <div style={{ flex: 1, overflow: 'auto', background: '#0f0f1a' }}>
+        {/* Detail Panel */}
+        <div className="scroll-area" style={{ flex: 1, overflow: 'auto', background: '#0a0a14' }}>
           {selectedPlugin ? (
-            <PluginDetail plugin={selectedPlugin} />
+            <PluginDetail plugin={selectedPlugin}
+              installing={installingId === selectedPlugin.id}
+              progress={installingId === selectedPlugin.id ? Math.min(Math.round(installProgress), 100) : 0}
+              isInstalled={installedIds.has(selectedPlugin.id)}
+              onInstall={() => handleInstall(selectedPlugin)}
+            />
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#666', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontSize: 48 }}>üß©</div>
-              <div>Select a plugin to view details</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#555570', flexDirection: 'column', gap: 12 }}>
+              <div style={{ fontSize: 56 }}>??</div>
+              <div style={{ fontSize: 16 }}>Select a plugin to view details</div>
             </div>
           )}
         </div>
@@ -251,157 +274,175 @@ const App: React.FC = () => {
   )
 }
 
-const PluginCard: React.FC<{ plugin: Plugin; selected: boolean; onClick: () => void }> = ({ plugin, selected, onClick }) => (
-  <div
+const PluginCard: React.FC<{ plugin: Plugin; selected: boolean; installing: boolean; progress: number; isInstalled: boolean; onClick: () => void; onInstall: () => void; index: number }> = ({
+  plugin, selected, installing, progress, isInstalled, onClick, onInstall, index
+}) => (
+  <div className={`plugin-card ${selected ? 'selected' : ''}`}
     onClick={onClick}
     style={{
-      padding: 14, borderRadius: 10,
-      background: selected ? '#1e1e3a' : '#1a1a2e',
-      border: selected ? '1px solid #667eea' : '1px solid transparent',
-      marginBottom: 8, cursor: 'pointer', transition: 'all 0.15s'
-    }}
-  >
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      padding: 16, borderRadius: 14, background: selected ? '#16162d' : '#111122',
+      border: selected ? '1px solid #667eea' : '1px solid #1e1e35',
+      marginBottom: 10, cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      animation: `fadeIn 0.3s ease ${index * 0.03}s both`
+    }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
       <div style={{
-        width: 44, height: 44, borderRadius: 10, background: '#2a2a3e',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 22, flexShrink: 0
+        width: 48, height: 48, borderRadius: 12,
+        background: `linear-gradient(135deg, ${['#667eea', '#f093fb', '#4facfa', '#43e97b', '#fa709a'][index % 5]}22, ${['#667eea', '#f093fb', '#4facfa', '#43e97b', '#fa709a'][index % 5]}11)`,
+        border: `1px solid ${['#667eea', '#f093fb', '#4facfa', '#43e97b', '#fa709a'][index % 5]}33`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0
       }}>{plugin.icon}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: '#fff', marginBottom: 3, display: 'flex', alignItems: 'center', gap: 6 }}>
-          {plugin.name}
-          {plugin.installed && <span style={{ fontSize: 10, color: '#4caf50', background: '#1a2e1a', padding: '2px 6px', borderRadius: 8 }}>Installed</span>}
+        <div style={{ fontWeight: 600, fontSize: 14, color: '#fff', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{plugin.name}</span>
+          {isInstalled && <span style={{ fontSize: 10, color: '#43e97b', background: 'rgba(67, 233, 123, 0.12)', padding: '2px 8px', borderRadius: 10, flexShrink: 0, fontWeight: 600 }}>? Installed</span>}
         </div>
-        <div style={{ fontSize: 12, color: '#888', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ fontSize: 12, color: '#7878a0', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', marginBottom: 8 }}>
           {plugin.description}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11, color: '#555570' }}>
+          <span>? {plugin.stars}</span>
+          <span>?? {plugin.downloads}</span>
+          <span style={{ marginLeft: 'auto', color: '#667eea' }}>v{plugin.version}</span>
         </div>
       </div>
     </div>
-    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 11, color: '#555' }}>
-      <span>‚≠ê {plugin.rating}</span>
-      <span>‚¨áÔ∏è {plugin.downloads}</span>
-      <span style={{ color: '#666' }}>v{plugin.version}</span>
+
+    {installing && (
+      <div style={{ marginTop: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 11, color: '#a5b4fc' }}>
+          <span>Installing...</span>
+          <span>{progress}%</span>
+        </div>
+        <div style={{ height: 4, background: '#1e1e35', borderRadius: 2, overflow: 'hidden' }}>
+          <div style={{
+            height: '100%', width: `${progress}%`,
+            background: 'linear-gradient(90deg, #667eea, #764ba2)',
+            borderRadius: 2, transition: 'width 0.2s ease',
+            boxShadow: '0 0 8px rgba(102, 126, 234, 0.5)'
+          }} />
+        </div>
+      </div>
+    )}
+  </div>
+)
+
+const PluginDetail: React.FC<{ plugin: Plugin; installing: boolean; progress: number; isInstalled: boolean; onInstall: () => void }> = ({
+  plugin, installing, progress, isInstalled, onInstall
+}) => (
+  <div style={{ maxWidth: 680, margin: '0 auto', padding: '36px 40px', animation: 'fadeIn 0.3s ease' }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24, marginBottom: 32 }}>
+      <div style={{
+        width: 88, height: 88, borderRadius: 20,
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40,
+        boxShadow: '0 8px 30px rgba(102, 126, 234, 0.3)'
+      }}>{plugin.icon}</div>
+      <div style={{ flex: 1 }}>
+        <h1 style={{ margin: '0 0 8px', fontSize: 28, color: '#fff', fontWeight: 700, letterSpacing: '-0.5px' }}>{plugin.name}</h1>
+        <div style={{ display: 'flex', gap: 16, fontSize: 13, color: '#7878a0', flexWrap: 'wrap' }}>
+          <span>By <strong style={{ color: '#a5b4fc' }}>{plugin.author}</strong></span>
+          <span>?</span>
+          <span>v{plugin.version}</span>
+          <span>?</span>
+          <span>?? {plugin.downloads}</span>
+          <span>?</span>
+          <span>? {plugin.stars}</span>
+        </div>
+      </div>
+    </div>
+
+    {installing ? (
+      <div style={{ marginBottom: 32, padding: '20px 24px', background: '#14142a', borderRadius: 14, border: '1px solid #2a2a45' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14, fontWeight: 600, color: '#a5b4fc' }}>
+          <span>? Installing {plugin.name}...</span>
+          <span>{progress}%</span>
+        </div>
+        <div style={{ height: 8, background: '#1e1e35', borderRadius: 4, overflow: 'hidden', marginBottom: 10 }}>
+          <div style={{
+            height: '100%', width: `${progress}%`,
+            background: 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)',
+            backgroundSize: '200% 100%', borderRadius: 4, transition: 'width 0.25s ease',
+            animation: 'shimmer 1.5s infinite linear',
+            boxShadow: '0 0 12px rgba(102, 126, 234, 0.5)'
+          }} />
+        </div>
+        <div style={{ fontSize: 12, color: '#555570' }}>
+          {progress < 30 ? 'Resolving dependencies...' : progress < 60 ? 'Downloading package...' : progress < 90 ? 'Extracting files...' : 'Finalizing installation...'}
+        </div>
+      </div>
+    ) : (
+      <div style={{ display: 'flex', gap: 12, marginBottom: 32 }}>
+        <button className="install-btn"
+          onClick={onInstall}
+          style={{
+            padding: '12px 32px', borderRadius: 10, border: 'none',
+            background: isInstalled ? '#1e1e35' : 'linear-gradient(135deg, #667eea, #764ba2)',
+            color: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700,
+            transition: 'all 0.2s', boxShadow: isInstalled ? 'none' : '0 4px 15px rgba(102, 126, 234, 0.3)'
+          }}>
+          {isInstalled ? '? Reinstall' : '? Install Plugin'}
+        </button>
+        <button style={{
+          padding: '12px 24px', borderRadius: 10, border: '1px solid #2a2a45',
+          background: 'transparent', color: '#a5b4fc', cursor: 'pointer', fontSize: 14, fontWeight: 500
+        }}>?? View Source</button>
+        <button style={{
+          padding: '12px 24px', borderRadius: 10, border: '1px solid #2a2a45',
+          background: 'transparent', color: '#a5b4fc', cursor: 'pointer', fontSize: 14, fontWeight: 500
+        }}>?? Report</button>
+      </div>
+    )}
+
+    <div style={{ marginBottom: 32 }}>
+      <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>About</h3>
+      <p style={{ margin: 0, color: '#9898b0', lineHeight: 1.8, fontSize: 14 }}>{plugin.description}</p>
+    </div>
+
+    <div style={{ marginBottom: 32 }}>
+      <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>Tags</h3>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {plugin.tags.map(tag => (
+          <span key={tag} style={{
+            padding: '5px 14px', borderRadius: 20, fontSize: 12,
+            background: 'rgba(102, 126, 234, 0.1)', color: '#a5b4fc', border: '1px solid rgba(102, 126, 234, 0.2)', fontWeight: 500
+          }}>#{tag}</span>
+        ))}
+      </div>
+    </div>
+
+    <div style={{ marginBottom: 32 }}>
+      <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>Statistics</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+        <StatCard label="Rating" value={`${plugin.rating} / 5.0`} icon="?" />
+        <StatCard label="Downloads" value={plugin.downloads} icon="??" />
+        <StatCard label="Monthly" value={plugin.monthlyDownloads} icon="??" />
+        <StatCard label="Version" value={plugin.version} icon="???" />
+      </div>
+    </div>
+
+    <div>
+      <h3 style={{ margin: '0 0 14px', fontSize: 16, color: '#fff', fontWeight: 600 }}>Reviews</h3>
+      {[
+        { user: 'Alex C.', comment: 'Excellent plugin! Greatly improved my workflow.', rating: 5 },
+        { user: 'Sarah L.', comment: 'Works well, but could use some performance improvements.', rating: 4 },
+      ].map((review, i) => (
+        <div key={i} style={{ padding: 16, background: '#111122', borderRadius: 12, marginBottom: 10, border: '1px solid #1e1e35' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontWeight: 600, fontSize: 13, color: '#fff' }}>{review.user}</span>
+            <span style={{ fontSize: 13, color: '#ffa726' }}>{'?'.repeat(review.rating)}</span>
+          </div>
+          <p style={{ margin: 0, fontSize: 13, color: '#9898b0', lineHeight: 1.6 }}>{review.comment}</p>
+        </div>
+      ))}
     </div>
   </div>
 )
 
-const PluginDetail: React.FC<{ plugin: Plugin }> = ({ plugin }) => {
-  const [installing, setInstalling] = useState(false)
-
-  const handleInstall = () => {
-    setInstalling(true)
-    setTimeout(() => setInstalling(false), 2000)
-  }
-
-  return (
-    <div style={{ maxWidth: 640, margin: '0 auto', padding: 32 }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28 }}>
-        <div style={{
-          width: 80, height: 80, borderRadius: 18,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 36
-        }}>{plugin.icon}</div>
-        <div>
-          <h1 style={{ margin: '0 0 6px 0', fontSize: 28, color: '#fff' }}>{plugin.name}</h1>
-          <div style={{ display: 'flex', gap: 12, fontSize: 13, color: '#888' }}>
-            <span>By {plugin.author}</span>
-            <span>‚Ä¢</span>
-            <span>v{plugin.version}</span>
-            <span>‚Ä¢</span>
-            <span>{plugin.downloads} downloads</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
-        <button
-          onClick={handleInstall}
-          disabled={installing}
-          style={{
-            padding: '10px 28px', borderRadius: 8, border: 'none',
-            background: plugin.installed ? '#2a2a3e' : '#667eea',
-            color: '#fff', cursor: installing ? 'wait' : 'pointer',
-            fontSize: 14, fontWeight: 600,
-            opacity: installing ? 0.7 : 1
-          }}
-        >
-          {installing ? 'Installing...' : plugin.installed ? 'Reinstall' : 'Install Plugin'}
-        </button>
-        <button style={{
-          padding: '10px 28px', borderRadius: 8, border: '1px solid #2a2a3e',
-          background: 'transparent', color: '#e0e0e0', cursor: 'pointer', fontSize: 14
-        }}>
-          View Source
-        </button>
-        <button style={{
-          padding: '10px 28px', borderRadius: 8, border: '1px solid #2a2a3e',
-          background: 'transparent', color: '#e0e0e0', cursor: 'pointer', fontSize: 14
-        }}>
-          Report Issue
-        </button>
-      </div>
-
-      {/* Description */}
-      <div style={{ marginBottom: 28 }}>
-        <h3 style={{ margin: '0 0 12px 0', fontSize: 16, color: '#fff' }}>About</h3>
-        <p style={{ margin: 0, color: '#aaa', lineHeight: 1.8, fontSize: 14 }}>
-          {plugin.description}. This plugin enhances your DSH experience with powerful features
-          and seamless integration. It supports multiple workflows and can be customized
-          to fit your specific needs.
-        </p>
-      </div>
-
-      {/* Tags */}
-      <div style={{ marginBottom: 28 }}>
-        <h3 style={{ margin: '0 0 12px 0', fontSize: 16, color: '#fff' }}>Tags</h3>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {plugin.tags.map(tag => (
-            <span key={tag} style={{
-              padding: '4px 12px', borderRadius: 12, fontSize: 12,
-              background: '#1a1a2e', color: '#888', border: '1px solid #2a2a3e'
-            }}>{tag}</span>
-          ))}
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div style={{ marginBottom: 28 }}>
-        <h3 style={{ margin: '0 0 12px 0', fontSize: 16, color: '#fff' }}>Statistics</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-          <StatCard label="Rating" value={`${plugin.rating} / 5.0`} icon="‚≠ê" />
-          <StatCard label="Downloads" value={plugin.downloads} icon="‚¨áÔ∏è" />
-          <StatCard label="Version" value={plugin.version} icon="üè∑Ô∏è" />
-          <StatCard label="Author" value={plugin.author} icon="üë§" />
-        </div>
-      </div>
-
-      {/* Reviews */}
-      <div>
-        <h3 style={{ margin: '0 0 12px 0', fontSize: 16, color: '#fff' }}>Reviews</h3>
-        {[
-          { user: 'Alex C.', comment: 'Excellent plugin! Greatly improved my workflow.', rating: 5 },
-          { user: 'Sarah L.', comment: 'Works well, but could use some performance improvements.', rating: 4 },
-        ].map((review, i) => (
-          <div key={i} style={{ padding: 14, background: '#1a1a2e', borderRadius: 8, marginBottom: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontWeight: 600, fontSize: 13, color: '#fff' }}>{review.user}</span>
-              <span style={{ fontSize: 12, color: '#ffa726' }}>{'‚≠ê'.repeat(review.rating)}</span>
-            </div>
-            <p style={{ margin: 0, fontSize: 13, color: '#aaa', lineHeight: 1.5 }}>{review.comment}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 const StatCard: React.FC<{ label: string; value: string; icon: string }> = ({ label, value, icon }) => (
-  <div style={{ padding: 14, background: '#1a1a2e', borderRadius: 8 }}>
-    <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>{icon} {label}</div>
-    <div style={{ fontSize: 15, color: '#fff', fontWeight: 600 }}>{value}</div>
+  <div style={{ padding: 16, background: '#111122', borderRadius: 12, border: '1px solid #1e1e35' }}>
+    <div style={{ fontSize: 12, color: '#555570', marginBottom: 6 }}>{icon} {label}</div>
+    <div style={{ fontSize: 16, color: '#fff', fontWeight: 700 }}>{value}</div>
   </div>
 )
 
